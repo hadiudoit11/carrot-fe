@@ -1,12 +1,31 @@
-import React from 'react'
+'use client';
+import React, { useState, useEffect } from 'react';
 import Image from "next/image";
-import Link from 'next/link'
-
-
-
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { login } from '../../../api/auth/route';
 
 export default function Home() {
-    
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const router = useRouter();
+
+    const handleSubmit = async (e:any) => {
+        e.preventDefault();
+        const formData = { email, password };
+        try {
+            const result = await login({}, formData); // Assuming `signup` function directly accepts formData
+            if (result.redirect) {
+                router.push(result.redirect); // Use the router after it is guaranteed to be available
+            } else {
+                setError(result.message || 'An unexpected error occurred');
+            }
+        } catch (error) {
+            console.error('Login failed:', error);
+            setError('Login failed <login.page.tsx>');
+        }
+    }
     return(
 
         <div className="flex min-h-full flex-1 bg-white">
@@ -33,7 +52,7 @@ export default function Home() {
 
                     <div className="mt-10">
                     <div>
-                        <form action="#" method="POST" className="space-y-6">
+                        <form action="#" method="POST" onSubmit={handleSubmit} className="space-y-6">
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
                             Email address
@@ -43,15 +62,17 @@ export default function Home() {
                                 id="email"
                                 name="email"
                                 type="email"
+                                value={email}
                                 autoComplete="email"
+                                onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset text-inherit ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset text-inherit ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 input-text-color pl-2"
                             />
                             </div>
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
+                            <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900 ">
                             Password
                             </label>
                             <div className="mt-2">
@@ -59,11 +80,15 @@ export default function Home() {
                                 id="password"
                                 name="password"
                                 type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 autoComplete="current-password"
                                 required
-                                className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 input-text-color pl-2"
                             />
                             </div>
+
+                            {error && <p className='mt-1 text-red-500 text-sm'>{error}</p>}
                         </div>
 
                         <div className="flex items-center justify-between">
@@ -95,7 +120,7 @@ export default function Home() {
                             </button>
                         </div>
                         </form>
-                        
+        
                     </div>
 
                     {/* <div className="mt-10">

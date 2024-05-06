@@ -1,12 +1,10 @@
 import React from 'react'
 import Image from "next/image";
-import Link from 'next/link'
 
 
 
 
 export default function Home() {
-    
     return(
 
         <div className="flex min-h-full flex-1 bg-white">
@@ -25,9 +23,9 @@ export default function Home() {
                     </h2>
                     <p className="mt-2 text-sm leading-6 text-gray-500">
                         Not a member?{' '}
-                        <Link href="/user/register" className="font-semibold text-orange-600 hover:text-indigo-500">
+                        <a href="#" className="font-semibold text-orange-600 hover:text-indigo-500">
                         Create a free account now
-                        </Link>
+                        </a>
                     </p>
                     </div>
 
@@ -45,7 +43,7 @@ export default function Home() {
                                 type="email"
                                 autoComplete="email"
                                 required
-                                className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset text-inherit ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                className="block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                             />
                             </div>
                         </div>
@@ -95,7 +93,6 @@ export default function Home() {
                             </button>
                         </div>
                         </form>
-                        
                     </div>
 
                     {/* <div className="mt-10">
