@@ -7,6 +7,8 @@ import OrgHome from '@/components/main/organization-home';
 export default function Home() {
     return(
     //
-        <OrgHome/>
+            <OrgHome />
+            
+    
     )
 }

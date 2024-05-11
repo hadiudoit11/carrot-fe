@@ -14,14 +14,14 @@ import {
   UsersIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
-import { ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid'
+import { ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import Link from "next/link";
 
 const navigation = [
   { name: 'Dashboard', href: 'home', icon: HomeIcon, current: true },
   { name: 'Organization', href: 'organization', icon: UsersIcon, current: false },
-  { name: 'Projects', href: 'projects', icon: FolderIcon, current: false },
-  { name: 'News', href: '#', icon: CalendarIcon, current: false },
+  { name: 'News', href: 'News', icon: FolderIcon, current: false },
+  { name: 'Projects', href: 'projects', icon: CalendarIcon, current: false },
   { name: 'Documents', href: '#', icon: DocumentDuplicateIcon, current: false },
   { name: 'Supply Chain', href: '#', icon: ChartPieIcon, current: false },
 ]
@@ -44,8 +44,10 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
+
 export default function RootLayout({ children }: RootLayoutProps) {
     const [sidebarOpen, setSidebarOpen] = useState(false)
+    // const router = useRouter()
     return (
         <html lang="en" className='h-full'>
             <body className="h-full">
@@ -86,7 +88,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                         >
                             <div className="absolute left-full top-0 flex w-16 justify-center pt-5">
                             <button type="button" className="-m-2.5 p-2.5" onClick={() => setSidebarOpen(false)}>
-                                <span className="sr-only">Close sidebar</span>
+                                <span className="sr-only text-black">Close sidebar</span>
                                 <XMarkIcon className="h-6 w-6 text-white" aria-hidden="true" />
                             </button>
                             </div>
@@ -163,7 +165,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 </Transition.Root>
 
                 {/* Static sidebar for desktop */}
-                <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
+                <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
                 {/* Sidebar component, swap this element with another sidebar if you like */}
                 <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-orange-500 px-6">
                     <div className="flex h-16 shrink-0 items-center">
@@ -244,20 +246,22 @@ export default function RootLayout({ children }: RootLayoutProps) {
                     </ul>
                     </nav>
                 </div>
-                </div>
+                </div> 
 
                 <div className="sticky top-0 z-40 flex items-center gap-x-6 bg-orange-600 px-4 py-4 shadow-sm sm:px-6 lg:hidden">
                 <button type="button" className="-m-2.5 p-2.5 text-indigo-200 lg:hidden" onClick={() => setSidebarOpen(true)}>
-                    <span className="sr-only">Open sidebar</span>
+                    <span className="sr-only text-black">Open sidebar</span>
                     <Bars3Icon className="h-6 w-6" aria-hidden="true" />
                 </button>
                 <div className="flex-1 text-sm font-semibold leading-6 text-white">Dashboard</div>
                 <a href="#">
                     <span className="sr-only">Your profile</span>
-                    <img
+                    <Image
                     className="h-8 w-8 rounded-full bg-indigo-700"
                     src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                     alt=""
+                    width={32}
+                    height={32}
                     />
                 </a>
                 </div>
