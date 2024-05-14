@@ -1,7 +1,7 @@
 'use client'
 import Image from "next/image";
-import { Fragment, ReactNode, useState } from 'react'
-import { Dialog, Menu, Transition } from '@headlessui/react'
+import { Fragment, ReactNode, useState } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
 import {
   Bars3Icon,
   BellIcon,
@@ -13,8 +13,9 @@ import {
   HomeIcon,
   UsersIcon,
   XMarkIcon,
-} from '@heroicons/react/24/outline'
-import { ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid';
+  ChevronDoubleLeftIcon,
+  ChevronDoubleRightIcon
+} from '@heroicons/react/24/outline';
 import Link from "next/link";
 
 const navigation = [
@@ -24,30 +25,31 @@ const navigation = [
   { name: 'Projects', href: 'projects', icon: CalendarIcon, current: false },
   { name: 'Documents', href: '#', icon: DocumentDuplicateIcon, current: false },
   { name: 'Supply Chain', href: '#', icon: ChartPieIcon, current: false },
-]
+];
+
 const teams = [
   { id: 1, name: 'Heroicons', href: '#', initial: 'H', current: false },
   { id: 2, name: 'Tailwind Labs', href: '#', initial: 'T', current: false },
   { id: 3, name: 'Workcation', href: '#', initial: 'W', current: false },
-]
+];
+
 const userNavigation = [
   { name: 'Your profile', href: '#' },
   { name: 'Sign out', href: '#' },
-]
+];
 
 function classNames(...classes: string[]) { 
   return classes.filter(Boolean).join(' ')
 }
 
-
 interface RootLayoutProps {
   children: ReactNode;
 }
 
-
 export default function RootLayout({ children }: RootLayoutProps) {
-    const [sidebarOpen, setSidebarOpen] = useState(false)
-    // const router = useRouter()
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
     return (
         <html lang="en" className='h-full'>
             <body className="h-full">
@@ -165,17 +167,23 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 </Transition.Root>
 
                 {/* Static sidebar for desktop */}
-                <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
+                <div className={classNames(
+                  "hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col",
+                  sidebarCollapsed ? "lg:w-20" : "lg:w-72"
+                )}>
                 {/* Sidebar component, swap this element with another sidebar if you like */}
                 <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-orange-500 px-6">
-                    <div className="flex h-16 shrink-0 items-center">
+                    <div className="flex h-16 shrink-0 items-center justify-between">
                     <Image
-                        className="h-8 w-auto"
+                        className="h-8 w-auto pb-1"
                         src="https://tailwindui.com/img/logos/mark.svg?color=white"
                         alt="Your Company"
                         width={120}
                         height={120}
                     />
+                    <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)}>
+                      {sidebarCollapsed ? <ChevronDoubleRightIcon className="h-6 w-6 text-white" aria-hidden="true" /> : <ChevronDoubleLeftIcon className="h-6 w-6 text-white" aria-hidden="true" />}
+                    </button>
                     </div>
                     <nav className="flex flex-1 flex-col">
                     <ul role="list" className="flex flex-1 flex-col gap-y-7">
@@ -189,7 +197,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                                     item.current
                                     ? 'bg-orange-700 text-white'
                                     : 'text-gray-100 hover:text-white hover:bg-orange-700',
-                                    'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
+                                    'group flex items-center gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
                                 )}
                                 >
                                 <item.icon
@@ -199,7 +207,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                                     )}
                                     aria-hidden="true"
                                 />
-                                {item.name}
+                                {!sidebarCollapsed && item.name}
                                 </a>
                             </li>
                             ))}
@@ -216,13 +224,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
                                     team.current
                                     ? 'bg-orange-700 text-white'
                                     : 'text-indigo-100 hover:text-white hover:bg-orange-700',
-                                    'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
+                                    'group flex items-center gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
                                 )}
                                 >
                                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-orange-400 bg-orange-600 text-[0.625rem] font-medium text-white">
                                     {team.initial}
                                 </span>
-                                <span className="truncate">{team.name}</span>
+                                <span className="truncate">{!sidebarCollapsed && team.name}</span>
                                 </a>
                             </li>
                             ))}
@@ -232,14 +240,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
                         <a>
                         <div className='flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-white hover:bg-indigo-700'>
                             <Image
-                            className="h-8 w-8 rounded-full bg-indigo-700 "
+                            className="h-8 w-8 rounded-full bg-indigo-700"
                             src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                             alt=""
                             width={32}
                             height={32}
                             />
                             <span className="sr-only">Your profile</span>
-                            <span aria-hidden="true">Tom Cook</span>
+                            <span aria-hidden="true">{!sidebarCollapsed && "Tom Cook"}</span>
                         </div> 
                         </a>   
                         </li>
@@ -266,12 +274,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 </a>
                 </div>
 
-                <main className="py-10 lg:pl-72 bg-white px-4 sm:px-6 lg:px-8">
+                <main className={classNames("py-10 lg:px-8", sidebarCollapsed ? "lg:pl-20" : "lg:pl-72")}>
                     {children}
                 </main>
             </div>
             </body>
         </html>
-
     );
-    }
+}
