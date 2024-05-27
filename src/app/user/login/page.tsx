@@ -1,26 +1,29 @@
-// pages/login.tsx
-'use client'
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import Link from 'next/link';
-import { login } from '@/api/auth/route';
-import { LoginFormData } from '@/types';
+"use client";
+import React, { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData: LoginFormData = { email, password };
-    const result = await login(formData);
-    if (result.redirect) {
-      router.push(result.redirect);
+    const result = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    });
+
+    if (result && !result.error) {
+      router.push("/home");
     } else {
-      setError(result.message);
+      setError(result?.error || "Login failed");
+      console.error("Login error:", result?.error);
     }
   };
 
@@ -40,8 +43,11 @@ const Login: React.FC = () => {
               Sign in to your account
             </h2>
             <p className="mt-2 text-sm leading-6 text-gray-500">
-              Not a member?{' '}
-              <Link href="/user/register" className="font-semibold text-orange-600 hover:text-indigo-500">
+              Not a member?{" "}
+              <Link
+                href="/user/register"
+                className="font-semibold text-orange-600 hover:text-indigo-500"
+              >
                 Create a free account now
               </Link>
             </p>
@@ -50,7 +56,10 @@ const Login: React.FC = () => {
           <div className="mt-10">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
                   Email address
                 </label>
                 <div className="mt-2">
@@ -68,7 +77,10 @@ const Login: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium leading-6 text-gray-900"
+                >
                   Password
                 </label>
                 <div className="mt-2">
@@ -95,13 +107,19 @@ const Login: React.FC = () => {
                     type="checkbox"
                     className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                   />
-                  <label htmlFor="remember-me" className="ml-3 block text-sm leading-6 text-gray-700">
+                  <label
+                    htmlFor="remember-me"
+                    className="ml-3 block text-sm leading-6 text-gray-700"
+                  >
                     Remember me
                   </label>
                 </div>
 
                 <div className="text-sm leading-6">
-                  <a href="#" className="font-semibold text-orange-600 hover:text-indigo-500">
+                  <a
+                    href="#"
+                    className="font-semibold text-orange-600 hover:text-indigo-500"
+                  >
                     Forgot password?
                   </a>
                 </div>

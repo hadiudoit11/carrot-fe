@@ -18,7 +18,7 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: #fff
+  background: #fff;
 }
 
 @layer utilities {
@@ -31,14 +31,13 @@ body {
   color: #333333 !important;
 }
 
-
 .gradient {
   position: relative;
   background-image: repeating-linear-gradient(
     to right,
-    #63DFFA,
-    #6C47FF,
-    #63DFFA
+    #63dffa,
+    #6c47ff,
+    #63dffa
   );
   z-index: 1;
   background-position-x: 0%;

@@ -1,6 +1,6 @@
 // components/OnboardingSlideshow.tsx
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface FormData {
   name: string;
@@ -13,18 +13,18 @@ interface FormData {
 const OnboardingSlideshow: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<FormData>({
-    name: '',
-    email: '',
-    password: '',
-    age: '',
+    name: "",
+    email: "",
+    password: "",
+    age: "",
   });
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    setErrors(prev => ({ ...prev, [name]: '' })); // Clear the error for the field being edited
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" })); // Clear the error for the field being edited
   };
 
   const validateInput = () => {
@@ -33,23 +33,23 @@ const OnboardingSlideshow: React.FC = () => {
 
     switch (currentStep) {
       case 0:
-        if (!name.trim()) newErrors.name = 'Name is required.';
+        if (!name.trim()) newErrors.name = "Name is required.";
         break;
       case 1:
         if (!email.trim()) {
-          newErrors.email = 'Email is required.';
+          newErrors.email = "Email is required.";
         } else if (!/\S+@\S+\.\S+/.test(email)) {
-          newErrors.email = 'Email address is invalid.';
+          newErrors.email = "Email address is invalid.";
         }
         break;
       case 2:
-        if (!password.trim()) newErrors.password = 'Password is required.';
+        if (!password.trim()) newErrors.password = "Password is required.";
         break;
       case 3:
         if (!age.trim()) {
-          newErrors.age = 'Age is required.';
+          newErrors.age = "Age is required.";
         } else if (isNaN(Number(age)) || Number(age) <= 0) {
-          newErrors.age = 'Please enter a valid age.';
+          newErrors.age = "Please enter a valid age.";
         }
         break;
       default:
@@ -64,7 +64,7 @@ const OnboardingSlideshow: React.FC = () => {
     if (validateInput()) {
       setErrors({});
       if (currentStep < slides.length - 1) {
-        setCurrentStep(prev => prev + 1);
+        setCurrentStep((prev) => prev + 1);
       } else {
         handleSubmit();
       }
@@ -73,35 +73,35 @@ const OnboardingSlideshow: React.FC = () => {
 
   const handlePrev = () => {
     if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
+      setCurrentStep((prev) => prev - 1);
     }
   };
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch('/api/onboarding', {
-        method: 'POST',
+      const response = await fetch("/api/onboarding", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
 
       if (response.ok) {
         const result = await response.json();
-        console.log('Submission successful:', result);
-        router.push('/thank-you');
+        console.log("Submission successful:", result);
+        router.push("/thank-you");
       } else {
-        console.error('Submission failed');
+        console.error("Submission failed");
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
+      console.error("Error submitting form:", error);
     }
   };
 
   const slides = [
     {
-      title: 'Step 1: Enter your name',
+      title: "Step 1: Enter your name",
       content: (
         <>
           <input
@@ -113,12 +113,14 @@ const OnboardingSlideshow: React.FC = () => {
             className="mt-2 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             required
           />
-          {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name}</p>}
+          {errors.name && (
+            <p className="text-red-600 text-sm mt-1">{errors.name}</p>
+          )}
         </>
       ),
     },
     {
-      title: 'Step 2: Enter your email',
+      title: "Step 2: Enter your email",
       content: (
         <>
           <input
@@ -130,12 +132,14 @@ const OnboardingSlideshow: React.FC = () => {
             className="mt-2 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             required
           />
-          {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email}</p>}
+          {errors.email && (
+            <p className="text-red-600 text-sm mt-1">{errors.email}</p>
+          )}
         </>
       ),
     },
     {
-      title: 'Step 3: Enter your password',
+      title: "Step 3: Enter your password",
       content: (
         <>
           <input
@@ -147,12 +151,14 @@ const OnboardingSlideshow: React.FC = () => {
             className="mt-2 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             required
           />
-          {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password}</p>}
+          {errors.password && (
+            <p className="text-red-600 text-sm mt-1">{errors.password}</p>
+          )}
         </>
       ),
     },
     {
-      title: 'Step 4: Enter your age',
+      title: "Step 4: Enter your age",
       content: (
         <>
           <input
@@ -164,7 +170,9 @@ const OnboardingSlideshow: React.FC = () => {
             className="mt-2 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             required
           />
-          {errors.age && <p className="text-red-600 text-sm mt-1">{errors.age}</p>}
+          {errors.age && (
+            <p className="text-red-600 text-sm mt-1">{errors.age}</p>
+          )}
         </>
       ),
     },
@@ -173,7 +181,9 @@ const OnboardingSlideshow: React.FC = () => {
   return (
     <div className="bg-white px-6 pb-20 pt-16 lg:px-8 lg:pb-8 lg:pt-8 rounded-lg shadow-lg">
       <div className="max-w-2xl mx-auto text-center">
-        <h2 className="text-3xl font-extrabold text-gray-900">{slides[currentStep].title}</h2>
+        <h2 className="text-3xl font-extrabold text-gray-900">
+          {slides[currentStep].title}
+        </h2>
         <div className="mt-4">{slides[currentStep].content}</div>
         <div className="mt-6 flex justify-between">
           {currentStep > 0 && (
@@ -188,7 +198,7 @@ const OnboardingSlideshow: React.FC = () => {
             onClick={handleNext}
             className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
           >
-            {currentStep === slides.length - 1 ? 'Submit' : 'Next'}
+            {currentStep === slides.length - 1 ? "Submit" : "Next"}
           </button>
         </div>
       </div>

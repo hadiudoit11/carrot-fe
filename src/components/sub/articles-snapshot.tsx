@@ -1,137 +1,104 @@
-import Image from 'next/image'
+'use client';
+
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
-
-
-const posts = [
-    { 
-        name: 'Total Subscribers', 
-        stat: '71,897', 
-        href: '#',
-        description: 'loremp ipsum dolor loremp ipsum dolor', 
-        previousStat: '70,946', 
-        change: '12%',
-        changeType: 'increase', 
-        date_time: 'Aug 4',
-        date: 'Aug 4',
-        reading_time:'6 min',
-        author: {
-            name: 'John D',
-            imageUrl: 'https://images.unsplash.com/photo-1550525811-e5869dd03032?auto=format&fit=crop&w=48&h=48&q=80',
-        },
-        category: { name: 'Engineering', color: 'bg-indigo-100' },
-    },
-    { 
-        name: 'Total Subscribers', 
-        stat: '71,897', 
-        href: '#',
-        description: 'loremp ipsum dolor loremp ipsum dolor', 
-        previousStat: '70,946', 
-        change: '12%',
-        changeType: 'increase', 
-        date_time: 'Aug 4',
-        date: 'Aug 4',
-        reading_time:'6 min',
-        author: {
-            name: 'John D',
-            imageUrl: 'https://images.unsplash.com/photo-1550525811-e5869dd03032?auto=format&fit=crop&w=48&h=48&q=80',
-        },
-        category: { name: 'Engineering', color: 'bg-indigo-100' },
-    },
-    { 
-        name: 'Total Subscribers', 
-        stat: '71,897', 
-        href: '#',
-        description: 'loremp ipsum dolor loremp ipsum dolor', 
-        previousStat: '70,946', 
-        change: '12%',
-        changeType: 'increase', 
-        date_time: 'Aug 4',
-        date: 'Aug 4',
-        reading_time:'6 min',
-        author: {
-            name: 'John D',
-            imageUrl: 'https://images.unsplash.com/photo-1550525811-e5869dd03032?auto=format&fit=crop&w=48&h=48&q=80',
-        },
-        category: { name: 'Engineering', color: 'bg-indigo-100' },
-    }
-    
-  ]
+import { useSession } from 'next-auth/react';
+import { Article } from '@/types';
 
 function classNames(...classes: (string | undefined | null | boolean)[]): string {
   return classes.filter(Boolean).join(' ');
 }
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  is_staff: boolean;
-  name: string;
-}
+export default function ArticleSnapshot() {
+  const { data: session, status } = useSession();
+  const [articles, setArticles] = useState<Article[]>([]);
 
-interface Posts {
-  id: number;
-  title: string;
-  description: string;
-  slug: string;
-  created_at: string;
-  updated_at: string;
-  author: User | null;
-  category: string;
-  logo: string;
-}
-// async function getData() {
-//   const response = await fetch('http://127.0.0.1:8000/api/campaigns', {cache: "no-cache"})
-//   return response.json()
-// }
+  useEffect(() => {
+    async function fetchData(token: string) {
+      const response = await fetch('http://localhost:8000/api/v1/articles/list/', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        cache: 'no-cache',
+    
 
-export default async function ArticleSnapshot() {
-  
-//   const data = await getData()
-//   console.log(data)
+      });
+      console.log(token)
+      console.log('Request Headers:', Headers);
+      console.log('Request Method:', 'GET');
+      
+      if (!response.ok) {
+        console.error('Failed to fetch data', response.status, response.statusText);
+        return null;
+      }
+
+      return response.json();
+    }
+
+    async function getData() {
+      if (session?.accessToken) {
+        const data = await fetchData(session.accessToken);
+        if (data && Array.isArray(data.posts)) {
+          setArticles(data.posts);
+          console.log(data.posts)
+        } else {
+          console.error('Fetched data is not an array:', data);
+        }
+      } else {
+        console.error('No access token found in session');
+      }
+    }
+
+    if (status === 'authenticated') {
+      getData();
+    }
+  }, [session, status]);
+
+  if (status === 'loading') {
+    return <div>Loading...</div>;
+  }
+
+  if (status === 'unauthenticated') {
+    return <div>Please log in to view this page.</div>;
+  }
 
   return (
     <div className="bg-gray-100 px-8 pb-20 pt-16 lg:px-8 lg:pb-8 lg:pt-8 rounded-lg ml-8">
       <div className="relative mx-auto max-w-lg divide-y-2 divide-gray-200 lg:max-w-7xl">
         <div className="mt-4 grid gap-10 pt-2 lg:grid-cols-3 lg:gap-x-5 lg:gap-y-12">
-          {posts.map((post) => (
-            <div key={post.name}>
+          {articles.map((article: Article) => (
+            <div key={article.name}>
               <div className="inline-block">
-   
-                  <span
-                    className={classNames(
-                      post.category.color,
-                      'inline-flex items-center rounded-full px-3 py-0.5 text-sm font-medium'
-                    )}
-                  >
-                    {post.category.name}
-                  </span>
-    
+                <span
+                  className={classNames(
+                    article.category.color,
+                    'inline-flex items-center rounded-full px-3 py-0.5 text-sm font-medium'
+                  )}
+                >
+                  {article.category.name}
+                </span>
               </div>
-              {/* <a href={post.href} className="mt-4 block">
-                <p className="text-xl font-semibold text-gray-900">{post.name}</p>
-                <p className="mt-3 text-base text-gray-500">{post.description}</p>
-              </a> */}
               <div className="mt-6 flex items-center">
                 <div className="flex-shrink-0">
                   <a>
-                    <span className="sr-only">line 64</span>
-                    {/* <Image
+                    <span className="sr-only">{article.author.name}</span>
+                    <Image
                       className="h-10 w-10 rounded-full"
-                      src={post.author.imageUrl}
-                      alt=""
+                      src={article.author.imageUrl}
+                      alt={article.author.name}
                       height={40}
-                      width={40} /> */}
+                      width={40}
+                    />
                   </a>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-900">
-                    {post.author?.name}
-                  </p>
+                  <p className="text-sm font-medium text-gray-900">{article.author.name}</p>
                   <div className="flex space-x-1 text-sm text-gray-500">
-                    <time dateTime={post.date_time}>{post.date}</time>
+                    <time dateTime={article.date_time}>{article.date}</time>
                     <span aria-hidden="true">&middot;</span>
-                    <span>{post.reading_time} read</span>
+                    <span>{article.reading_time} read</span>
                   </div>
                 </div>
               </div>
@@ -140,5 +107,5 @@ export default async function ArticleSnapshot() {
         </div>
       </div>
     </div>
-  )
+  );
 }
