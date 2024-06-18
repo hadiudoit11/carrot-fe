@@ -2,8 +2,10 @@
 
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import { Article } from '@/types';
+import { apiFetch } from '@/providers/apiFetch';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 function classNames(...classes: (string | undefined | null | boolean)[]): string {
   return classes.filter(Boolean).join(' ');
@@ -12,49 +14,44 @@ function classNames(...classes: (string | undefined | null | boolean)[]): string
 export default function ArticleSnapshot() {
   const { data: session, status } = useSession();
   const [articles, setArticles] = useState<Article[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
-    async function fetchData(token: string) {
-      const response = await fetch('http://localhost:8000/api/v1/articles/list/', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        cache: 'no-cache',
-    
+    async function fetchData() {
+      try {
+        const response = await apiFetch('http://localhost:8000/api/v1/articles/list/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          cache: 'no-cache',
+        });
 
-      });
-      console.log(token)
-      console.log('Request Headers:', Headers);
-      console.log('Request Method:', 'GET');
-      
-      if (!response.ok) {
-        console.error('Failed to fetch data', response.status, response.statusText);
-        return null;
-      }
+        console.log('Response status:', response.status);
 
-      return response.json();
-    }
-
-    async function getData() {
-      if (session?.accessToken) {
-        const data = await fetchData(session.accessToken);
-        if (data && Array.isArray(data.posts)) {
-          setArticles(data.posts);
-          console.log(data.posts)
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Fetched data:', data);
+          if (Array.isArray(data)) {
+            setArticles(data);
+          } else {
+            console.error('Fetched data is not an array:', data);
+          }
+        } else if (response.status === 409) {
+          console.log('response.status:', response.status);
+          router.push('/onboarding');
         } else {
-          console.error('Fetched data is not an array:', data);
+          console.error('Unexpected response status:', response.status);
         }
-      } else {
-        console.error('No access token found in session');
+      } catch (error) {
+        console.error('Error fetching data:', error);
       }
     }
 
     if (status === 'authenticated') {
-      getData();
+      fetchData();
     }
-  }, [session, status]);
+  }, [status, router]);
 
   if (status === 'loading') {
     return <div>Loading...</div>;
@@ -63,6 +60,7 @@ export default function ArticleSnapshot() {
   if (status === 'unauthenticated') {
     return <div>Please log in to view this page.</div>;
   }
+  console.log(articles)
 
   return (
     <div className="bg-gray-100 px-8 pb-20 pt-16 lg:px-8 lg:pb-8 lg:pt-8 rounded-lg ml-8">
@@ -108,4 +106,4 @@ export default function ArticleSnapshot() {
       </div>
     </div>
   );
-}
+};

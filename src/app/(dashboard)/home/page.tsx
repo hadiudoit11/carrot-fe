@@ -1,6 +1,7 @@
 "use client";
 
 import HomeArticles from "@/components/main/dashboard-home";
+import ArticleSnapshot from "@/components/sub/articles-snapshot";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -19,6 +20,6 @@ export default function Home() {
   }
 
   return (
-    <HomeArticles />
+    <ArticleSnapshot />
   );
 }

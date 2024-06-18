@@ -8,6 +8,7 @@ const nextConfig = {
     swcMinify: true,
     swcLoader: true,
   },
+  reactStrictMode: false,
 };
 
 export default nextConfig;

@@ -18,7 +18,7 @@ const Login: React.FC = () => {
       email,
       password,
     });
-
+    
     if (result && !result.error) {
       router.push("/home");
     } else {
