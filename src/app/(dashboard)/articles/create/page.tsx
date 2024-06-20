@@ -9,6 +9,8 @@ import { useEffect } from "react";
 export default function ArticlesCreate() {
 
   return (
-    <Tiptap />
+    <div className="min-h-screen bg-gray-100 p-8">
+        <Tiptap />
+    </div>
   );
 }
