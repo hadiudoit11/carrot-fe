@@ -1,11 +1,9 @@
-import { useEditor, EditorContent } from '@tiptap/react';
 
+import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import CharacterCount from '@tiptap/extension-character-count'
-import Collaboration from '@tiptap/extension-collaboration'
-import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
 import Highlight from '@tiptap/extension-highlight'
 import TaskItem from '@tiptap/extension-task-item'
 import TaskList from '@tiptap/extension-task-list'
@@ -40,12 +38,7 @@ const Tiptap = () => {
       CharacterCount.configure({
         limit: 10000,
       }),
-      Collaboration.configure({
-        document: ydoc,
-      }),
-      CollaborationCursor.configure({
-        provider: websocketProvider,
-      }),
+      
       Link,
       Bold,
       Italic,
@@ -59,7 +52,7 @@ const Tiptap = () => {
       {editor && <MenuBar editor={editor} />}
       <EditorContent
         editor={editor}
-        className="editor__content min-h-screen border border-gray-300 bg-white p-4 shadow-md text-black focus:ring-black focus:outline-amber-200"
+        className="editor__content"
       />
     </div>
   );
