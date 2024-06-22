@@ -1,8 +1,8 @@
 // next.config.mjs
-import { createRequire } from 'module';
+import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
 });
 
 const ContentSecurityPolicy = `
@@ -18,45 +18,56 @@ const ContentSecurityPolicy = `
 
 const securityHeaders = [
   {
-    key: 'Content-Security-Policy',
-    value: ContentSecurityPolicy.replace(/\n/g, ''),
+    key: "Content-Security-Policy",
+    value: ContentSecurityPolicy.replace(/\n/g, ""),
   },
   {
-    key: 'Referrer-Policy',
-    value: 'strict-origin-when-cross-origin',
+    key: "Referrer-Policy",
+    value: "strict-origin-when-cross-origin",
   },
   {
-    key: 'X-Frame-Options',
-    value: 'DENY',
+    key: "X-Frame-Options",
+    value: "DENY",
   },
   {
-    key: 'X-Content-Type-Options',
-    value: 'nosniff',
+    key: "X-Content-Type-Options",
+    value: "nosniff",
   },
   {
-    key: 'X-DNS-Prefetch-Control',
-    value: 'on',
+    key: "X-DNS-Prefetch-Control",
+    value: "on",
   },
   {
-    key: 'Strict-Transport-Security',
-    value: 'max-age=31536000; includeSubDomains',
+    key: "Strict-Transport-Security",
+    value: "max-age=31536000; includeSubDomains",
   },
   {
-    key: 'Permissions-Policy',
-    value: 'camera=(), microphone=(), geolocation=()',
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=()",
   },
 ];
 
+/**
+ * @type {import('next').NextConfig}
+ **/
 const config = {
   reactStrictMode: true,
-  pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
+  pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
   eslint: {
-    dirs: ['pages', 'components', 'lib', 'layouts', 'scripts'],
+    dirs: ["pages", "components", "lib", "layouts", "scripts"],
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+    ],
   },
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: securityHeaders,
       },
     ];
@@ -66,10 +77,10 @@ const config = {
       test: /\.(png|jpe?g|gif|mp4)$/i,
       use: [
         {
-          loader: 'file-loader',
+          loader: "file-loader",
           options: {
-            publicPath: '/_next',
-            name: 'static/media/[name].[hash].[ext]',
+            publicPath: "/_next",
+            name: "static/media/[name].[hash].[ext]",
           },
         },
       ],
@@ -77,7 +88,7 @@ const config = {
 
     config.module.rules.push({
       test: /\.svg$/,
-      use: ['@svgr/webpack'],
+      use: ["@svgr/webpack"],
     });
 
     return config;
@@ -85,7 +96,6 @@ const config = {
 };
 
 export default withBundleAnalyzer(config);
-
 
 // import withBundleAnalyzer from '@next/bundle-analyzer';
 
