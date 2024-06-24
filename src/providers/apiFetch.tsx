@@ -33,6 +33,7 @@ export async function apiFetch(url: string, options: RequestInit = {}): Promise<
 
     if (!refreshedTokens.accessToken) {
       console.error('Failed to refresh access token');
+      
       return new Response(null, { status: 401, statusText: 'Unauthorized' });
     }
 

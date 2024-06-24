@@ -51,6 +51,10 @@ body {
   background-clip: text;
 }
 
+.content .ProseMirror {
+  @apply outline-none;
+}
+
 @keyframes gradimate {
   0% {
     background-position-x: 0%;

@@ -9,10 +9,10 @@ import { useEffect } from "react";
 export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
-
   useEffect(() => {
     if (status === 'loading') return; // Do nothing while loading
-    if (!session) router.push('/user/login'); // Redirect if not authenticated
+    if (session?.error === 'RefreshAccessTokenError') router.push('/user/login'); // Redirect if not authenticated
+    console.log(session?.error)
   }, [session, status, router]);
 
   if (status === 'loading') {

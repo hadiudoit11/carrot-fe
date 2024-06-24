@@ -332,7 +332,7 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
 
           <main
             className={classNames(
-              "py-10 lg:px-8",
+              "py-10 bg-gray-100",
               sidebarCollapsed ? "lg:pl-20" : "lg:pl-72",
             )}
           >

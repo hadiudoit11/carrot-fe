@@ -97,8 +97,13 @@ export const authOptions: NextAuthOptions = {
       session.refreshToken = token.refreshToken;
       session.user.email = token.email;
       session.user.organization = token.organization; // Add organization data to the session
+      if (token.error === 'RefreshAccessTokenError'){
+        session.error = 'RefreshAccessTokenError';
+      }
       return session;
     },
+
+      
   },
   pages: {
     signIn: '/user/login',

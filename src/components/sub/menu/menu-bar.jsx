@@ -1,14 +1,34 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useState } from "react";
 import MenuItem from "./menu-item.jsx";
 import {
   RiBold,
   RiItalic,
   RiStrikethrough,
   RiCodeView,
+  RiMarkPenLine,
+  RiDivideLine,
+  RiH1,
+  RiH2,
+  RiParagraph,
+  RiListUnordered,
+  RiListOrdered,
+  RiListCheck2,
+  RiCodeBoxLine,
+  RiDoubleQuotesL,
+  RiDashboardHorizontalLine,
+  RiTrelloLine,
+  RiFormatClear,
+  RiGradienterLine,
+  RiArrowGoBackFill,
+  RiArrowGoForwardFill,
+  RiImageAddLine,
+
 } from "@remixicon/react";
 import "@/components/sub/menu/menu-bar.scss";
 
 export default ({ editor }) => {
+ 
+
   const items = [
     {
       icon: RiBold,
@@ -34,101 +54,112 @@ export default ({ editor }) => {
       action: () => editor.chain().focus().toggleCode().run(),
       isActive: () => editor.isActive("code"),
     },
-    // {
-    //   icon: "mark-pen-line",
-    //   title: "Highlight",
-    //   action: () => editor.chain().focus().toggleHighlight().run(),
-    //   isActive: () => editor.isActive("highlight"),
-    // },
-    // {
-    //   type: "divider",
-    // },
-    // {
-    //   icon: "h-1",
-    //   title: "Heading 1",
-    //   action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
-    //   isActive: () => editor.isActive("heading", { level: 1 }),
-    // },
-    // {
-    //   icon: "h-2",
-    //   title: "Heading 2",
-    //   action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
-    //   isActive: () => editor.isActive("heading", { level: 2 }),
-    // },
-    // {
-    //   icon: "paragraph",
-    //   title: "Paragraph",
-    //   action: () => editor.chain().focus().setParagraph().run(),
-    //   isActive: () => editor.isActive("paragraph"),
-    // },
-    // {
-    //   icon: "list-unordered",
-    //   title: "Bullet list",
-    //   action: () => editor.chain().focus().toggleBulletList().run(),
-    //   isActive: () => editor.isActive("bulletList"),
-    // },
-    // {
-    //   icon: "list-ordered",
-    //   title: "Ordered list",
-    //   action: () => editor.chain().focus().toggleOrderedList().run(),
-    //   isActive: () => editor.isActive("orderedList"),
-    // },
-    // {
-    //   icon: "list-check-2",
-    //   title: "Task list",
-    //   action: () => editor.chain().focus().toggleTaskList().run(),
-    //   isActive: () => editor.isActive("taskList"),
-    // },
-    // {
-    //   icon: "code-box-line",
-    //   title: "Code block",
-    //   action: () => editor.chain().focus().toggleCodeBlock().run(),
-    //   isActive: () => editor.isActive("codeBlock"),
-    // },
-    // {
-    //   type: "divider",
-    // },
-    // {
-    //   icon: "double-quotes-l",
-    //   title: "Blockquote",
-    //   action: () => editor.chain().focus().toggleBlockquote().run(),
-    //   isActive: () => editor.isActive("blockquote"),
-    // },
-    // {
-    //   icon: "separator",
-    //   title: "Horizontal rule",
-    //   action: () => editor.chain().focus().setHorizontalRule().run(),
-    // },
-    // {
-    //   type: "divider",
-    // },
-    // {
-    //   icon: "text-wrap",
-    //   title: "Hard break",
-    //   action: () => editor.chain().focus().setHardBreak().run(),
-    // },
-    // {
-    //   icon: "format-clear",
-    //   title: "Clear format",
-    //   action: () => editor.chain().focus().clearNodes().unsetAllMarks().run(),
-    // },
-    // {
-    //   type: "divider",
-    // },
-    // {
-    //   icon: "arrow-go-back-line",
-    //   title: "Undo",
-    //   action: () => editor.chain().focus().undo().run(),
-    // },
-    // {
-    //   icon: "arrow-go-forward-line",
-    //   title: "Redo",
-    //   action: () => editor.chain().focus().redo().run(),
-    // },
+    {
+      icon: RiMarkPenLine,
+      title: "Highlight",
+      action: () => editor.chain().focus().toggleHighlight().run(),
+      isActive: () => editor.isActive("Highlight"),
+    },
+    {
+      type: "divider",
+    },
+    {
+      icon: RiH1,
+      title: "Heading 1",
+      action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
+      isActive: () => editor.isActive("heading", { level: 1 }),
+    },
+    {
+      icon: RiH2,
+      title: "Heading 2",
+      action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+      isActive: () => editor.isActive("heading", { level: 2 }),
+    },
+    {
+      icon: RiParagraph,
+      title: "Paragraph",
+      action: () => editor.chain().focus().setParagraph().run(),
+      isActive: () => editor.isActive("paragraph"),
+    },
+    {
+      icon: RiListUnordered,
+      title: "Bullet list",
+      action: () => editor.chain().focus().toggleBulletList().run(),
+      isActive: () => editor.isActive("bulletList"),
+    },
+    {
+      icon: RiListOrdered,
+      title: "Ordered list",
+      action: () => editor.chain().focus().toggleOrderedList().run(),
+      isActive: () => editor.isActive("orderedList"),
+    },
+    {
+      icon: RiListCheck2,
+      title: "Task list",
+      action: () => editor.chain().focus().toggleTaskList().run(),
+      isActive: () => editor.isActive("taskList"),
+    },
+    {
+      icon: RiCodeBoxLine,
+      title: "Code block",
+      action: () => editor.chain().focus().toggleCodeBlock().run(),
+      isActive: () => editor.isActive("codeBlock"),
+    },
+    {
+      type: "divider",
+    },
+    {
+      icon: RiDoubleQuotesL,
+      title: "Blockquote",
+      action: () => editor.chain().focus().toggleBlockquote().run(),
+      isActive: () => editor.isActive("blockquote"),
+    },
+    {
+      icon: RiDashboardHorizontalLine,
+      title: "Horizontal rule",
+      action: () => editor.chain().focus().setHorizontalRule().run(),
+    },
+    {
+      type: "divider",
+    },
+    {
+      icon: RiGradienterLine,
+      title: "Hard break",
+      action: () => editor.chain().focus().setHardBreak().run(),
+    },
+    {
+      icon: RiFormatClear,
+      title: "Clear format",
+      action: () => editor.chain().focus().clearNodes().unsetAllMarks().run(),
+    },
+    {
+      type: "divider",
+    },
+    {
+      icon: RiArrowGoBackFill,
+      title: "Undo",
+      action: () => editor.chain().focus().undo().run(),
+    },
+    {
+      icon: RiArrowGoForwardFill,
+      title: "Redo",
+      action: () => editor.chain().focus().redo().run(),
+    },
+    {
+      icon: RiImageAddLine,
+      title: "Add Image",
+      action: () => {
+        const url = window.prompt("Enter the image URL");
+        if (url) {
+          editor.chain().focus().setImage({ src: url }).run();
+        }
+      },
+    },
+
   ];
 
   return (
-    <div className="editor__header">
+    <div className="flex items-center bg-green-900 border-b-3 border-black rounded-lg p-1 flex-wrap w-10/12">
       {items.map((item, index) => (
         <Fragment key={index}>
           {item.type === "divider" ? (
@@ -140,6 +171,14 @@ export default ({ editor }) => {
           )}
         </Fragment>
       ))}
+      <button 
+        className="ml-auto flex items-right text-green-950 font-bold bg-white rounded-lg px-4 py-1"
+
+      >
+        Publish
+      </button>
+      
+
     </div>
   );
 };
