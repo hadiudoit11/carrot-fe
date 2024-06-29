@@ -1,10 +1,8 @@
 "use client";
 
-import HomeArticles from "@/components/main/dashboard-home";
-import ArticleSnapshot from "@/components/sub/articles-snapshot";
-import HomeFeed from "@/components/sub/feed";
-import ProjectSummary from "@/components/sub/project-summary";
-import Snapshot from "@/components/sub/snapshot";
+
+import FileUpload from "@/components/sub/file-upload";
+import Navbar from "@/components/sub/navbars/navbar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -23,25 +21,13 @@ export default function Home() {
   }
 
   return (
-    <div className = 'bg-gray-100 p-10'>
-      <div className = 'pb-8'>
-        <Snapshot/>
-      </div>
-      <div>
-        <ArticleSnapshot />
-      </div>
-      <div className= "grid grid-cols-2 mt-8">
-        <div className= "lg:mr-4">
-          <HomeFeed/>
+    <div>
+        <div>
+            <Navbar />
         </div>
-        <div className= "lg:ml-4 bg-white rounded-lg">
-
+        <div>
+            <FileUpload />
         </div>
-      </div>
-
-      <div>
-        <ProjectSummary />
-      </div>
     </div>
   );
 }

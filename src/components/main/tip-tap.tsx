@@ -54,8 +54,6 @@ const Tiptap = () => {
     onUpdate: ({editor}) => {
       handleAutoSave(editor.getHTML());
     },
-
-    
   });
 
   return (

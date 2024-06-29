@@ -3,9 +3,9 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { Article } from '@/types';
-import { apiFetch } from '@/providers/apiFetch';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { apiGet } from '@/providers/apiRequest';
 
 function classNames(...classes: (string | undefined | null | boolean)[]): string {
   return classes.filter(Boolean).join(' ');
@@ -19,29 +19,18 @@ export default function ArticleSnapshot() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await apiFetch('http://localhost:8000/api/v1/articles/list/', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          cache: 'no-cache',
-        });
+        const data = await apiGet('http://localhost:8000/api/v1/articles/list/');
 
-        console.log('Response status:', response.status);
+        if (!data) {
+          console.error('Response is undefined');
+          return;
+        }
 
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Fetched data:', data);
-          if (Array.isArray(data)) {
-            setArticles(data);
-          } else {
-            console.error('Fetched data is not an array:', data);
-          }
-        } else if (response.status === 409) {
-          console.log('response.status:', response.status);
-          router.push('/onboarding');
+        console.log('Fetched data:', data);
+        if (Array.isArray(data)) {
+          setArticles(data);
         } else {
-          console.error('Unexpected response status:', response.status);
+          console.error('Fetched data is not an array:', data);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -60,10 +49,9 @@ export default function ArticleSnapshot() {
   if (status === 'unauthenticated') {
     return <div>Please log in to view this page.</div>;
   }
-  console.log(articles)
 
   return (
-    <div className="bg-gray-100 px-8 pb-20 pt-16 lg:px-8 lg:pb-8 lg:pt-8 rounded-lg ml-8">
+    <div className="bg-white px-8 pb-20 pt-16 lg:px-8 lg:pb-8 lg:pt-8 rounded-lg">
       <div className="relative mx-auto max-w-lg divide-y-2 divide-gray-200 lg:max-w-7xl">
         <div className="mt-4 grid gap-10 pt-2 lg:grid-cols-3 lg:gap-x-5 lg:gap-y-12">
           {articles.map((article: Article) => (

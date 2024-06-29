@@ -17,7 +17,6 @@ import {
   ChevronDoubleRightIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { NextAuthProvider } from "@/providers/NextAuthProvider";
 import { SessionProvider } from "next-auth/react";
 
 
@@ -296,7 +295,7 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
                         />
                         <span className="sr-only">Your profile</span>
                         <span aria-hidden="true">
-                          {!sidebarCollapsed && "Tom Cook"}
+                          {!sidebarCollapsed && ``}
                         </span>
                       </div>
                     </a>
@@ -332,7 +331,6 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
 
           <main
             className={classNames(
-              "py-10 bg-gray-100",
               sidebarCollapsed ? "lg:pl-20" : "lg:pl-72",
             )}
           >
