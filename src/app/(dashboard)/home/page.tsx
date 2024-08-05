@@ -15,7 +15,8 @@ export default function Home() {
   useEffect(() => {
     if (status === 'loading') return; // Do nothing while loading
     if (session?.error === 'RefreshAccessTokenError') router.push('/user/login'); // Redirect if not authenticated
-    console.log(session?.error)
+    if (!session?.user.organization) router.push('/onboarding');
+    console.log(`home/page.tsx line 19: ${session?.user.organization}`)
   }, [session, status, router]);
 
   if (status === 'loading') {

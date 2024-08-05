@@ -1,16 +1,14 @@
 "use client";
 
-import HomeArticles from "@/components/main/dashboard-home";
-import Tiptap from "@/components/main/tip-tap";
-import NavbarArticles from "@/components/sub/navbars/navbar-articles";
+
+import SettingsHeader from "@/components/main/settings-header";
+import FileUpload from "@/components/sub/file-upload";
+import Navbar from "@/components/sub/navbars/navbar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-
-
-
-export default function ArticlesCreate() {
+export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
   useEffect(() => {
@@ -22,12 +20,11 @@ export default function ArticlesCreate() {
   if (status === 'loading') {
     return <div>Loading...</div>; // Display a loading state while fetching session
   }
+
   return (
-    <div className="min-h-screen">
-        
-        <div><NavbarArticles /></div>
-        <div className= "mt-8">
-        <Tiptap />
+    <div className="bg-gray-100 p-8">
+        <div className = "bg-white p-8 rounded-lg">
+            <SettingsHeader />
         </div>
     </div>
   );

@@ -1,4 +1,5 @@
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react';
+import AddUser from './slideouts/add-user';
 
 const locations = [
   {
@@ -38,6 +39,7 @@ function classNames(
   }
   
 export default function CreateUser() {
+  const [isSlideOverOpen, setSlideOverOpen] = useState(false);
   return (
     <div className="bg-white p-8 rounded-lg">
       <div className="sm:flex sm:items-center">
@@ -51,6 +53,7 @@ export default function CreateUser() {
           <button
             type="button"
             className="block rounded-md bg-orange-500 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            onClick={() => setSlideOverOpen(true)}
           >
             Add user
           </button>
@@ -116,6 +119,7 @@ export default function CreateUser() {
           </div>
         </div>
       </div>
+      <AddUser open={isSlideOverOpen} setOpen={setSlideOverOpen}/>
     </div>
   )
 }

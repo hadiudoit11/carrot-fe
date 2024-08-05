@@ -21,11 +21,11 @@ export default function Home() {
   }
 
   return (
-    <div>
+    <div className="bg-gray-100">
         <div>
-            <Navbar />
+          <Navbar />
         </div>
-        <div>
+        <div className="p-8 mt-8">
             <FileUpload />
         </div>
     </div>

@@ -17,7 +17,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
   return (
     <html lang="en" className='h-full bg-white'>
-      <body className='h-full'>
+      <body className='h-full bg-gray-100'>
         <SessionProvider>{children}</SessionProvider>
       </body>
     </html>

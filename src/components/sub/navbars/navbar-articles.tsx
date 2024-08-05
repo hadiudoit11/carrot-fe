@@ -9,7 +9,7 @@ function classNames(
 }
 
 
-export default function Navbar() {
+export default function NavbarArticles() {
   return (
     <Disclosure as="nav" className="bg-white shadow">
       {({ open }) => (

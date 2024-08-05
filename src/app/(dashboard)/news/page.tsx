@@ -1,16 +1,14 @@
-"use client";
+'use client'
+import React from "react";
 
-import HomeArticles from "@/components/main/dashboard-home";
-import Tiptap from "@/components/main/tip-tap";
-import NavbarArticles from "@/components/sub/navbars/navbar-articles";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import NewsPrimary from "@/components/sub/news/news-primary";
+import NewsSecondary from "@/components/sub/news/news-secondary";
+import NewsTertiary from "@/components/sub/news/news-tertiary";
 
-
-
-
-export default function ArticlesCreate() {
+export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
   useEffect(() => {
@@ -22,13 +20,18 @@ export default function ArticlesCreate() {
   if (status === 'loading') {
     return <div>Loading...</div>; // Display a loading state while fetching session
   }
+
   return (
-    <div className="min-h-screen">
-        
-        <div><NavbarArticles /></div>
-        <div className= "mt-8">
-        <Tiptap />
-        </div>
+    <div>
+      <div>
+        <NewsPrimary/>
+      </div>
+      <div>
+        <NewsSecondary/>
+      </div>
+      <div>
+        <NewsTertiary />
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
-// components/OnboardingSlideshow.tsx
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { apiPost } from "@/providers/apiRequest";
 
 interface FormData {
   name: string;
@@ -8,9 +8,10 @@ interface FormData {
   address_2: string;
   city: string;
   state: string;
-  zipcode: string;
+  zip_code: string;
   country: string;
-  [key: string]: string; // To accommodate any other fields
+  phone_number: string;
+  [key: string]: string;
 }
 
 const COUNTRY_CHOICES = [
@@ -27,54 +28,77 @@ const OnboardingSlideshow: React.FC = () => {
     address_2: "",
     city: "",
     state: "",
-    zipcode: "",
-    country: "",
+    zip_code: "",
+    phone_number: "",
+    country: ""
   });
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const router = useRouter();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement| HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: "" })); // Clear the error for the field being edited
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validateInput = () => {
-    const { name, address_1, address_2, city, state, zipcode, country } = formData;
+    const { name, address_1, address_2, city, state, zip_code, country, phone_number} = formData;
     const newErrors: Partial<FormData> = {};
     let valid = true;
-    
+
     switch (currentStep) {
       case 0:
-        if (!name.trim()) valid = false;
+        if (!name.trim()) {
+          newErrors.name = "Name is required";
+          valid = false;
+        }
         break;
       case 1:
-        if (!name.trim()) valid = false;
-        if (!address_1.trim()) valid = false;
-        if (!address_2.trim()) valid = false;
-        if (!city.trim()) valid = false;
-        if (!state.trim()) valid = false;
-        if (!zipcode.trim()) valid = false;
-        if (!country.trim()) valid = false;
+        if (!phone_number.trim()) {
+          newErrors.address_1 = "Phone number is required";
+          valid = false;
+        }
+        if (!address_1.trim()) {
+          newErrors.address_1 = "Address 1 is required";
+          valid = false;
+        }
+        if (!address_2.trim()) {
+          newErrors.address_2 = "Address 2 is required";
+          valid = false;
+        }
+        if (!city.trim()) {
+          newErrors.city = "City is required";
+          valid = false;
+        }
+        if (!state.trim()) {
+          newErrors.state = "State is required";
+          valid = false;
+        }
+        if (!zip_code.trim()) {
+          newErrors.zip_code = "Zipcode is required";
+          valid = false;
+        }
+        if (!country.trim()) {
+          newErrors.country = "Country is required";
+          valid = false;
+        }
         break;
       default:
         break;
-      
     }
-    
-    if (!valid ){
-      setGeneralError("Please fill out the required field(s)")
+
+    setErrors(newErrors);
+
+    if (!valid) {
+      setGeneralError("Please fill out the required field(s)");
     }
 
     return valid;
   };
 
-
-
-
   const handleNext = () => {
     if (validateInput()) {
-      setGeneralError(null); // Clear the general error if validation passes
+      setGeneralError(null);
       if (currentStep < slides.length - 1) {
         setCurrentStep((prev) => prev + 1);
       } else {
@@ -91,18 +115,12 @@ const OnboardingSlideshow: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch("/api/onboarding", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log("Submission successful:", result);
-        router.push("/thank-you");
+      const response = await apiPost("http://localhost:8000/api/v1/auth/organization-create/", formData);
+      console.log(formData)
+  
+      if (response) {
+        console.log("Submission successful:", response);
+        router.push("/home");
       } else {
         console.error("Submission failed");
       }
@@ -122,7 +140,7 @@ const OnboardingSlideshow: React.FC = () => {
             value={formData.name}
             onChange={handleChange}
             placeholder="Krustycrab Burger"
-            className=" mt-2 w-full p-3.5 rounded-md text-black border-gray-300 shadow-md focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
+            className="mt-2 w-full p-3.5 rounded-md text-black border-gray-300 shadow-md focus:border-orange-500 focus:ring-orange-500 sm:text-sm"
             required
           />
           {errors.name && (
@@ -135,121 +153,114 @@ const OnboardingSlideshow: React.FC = () => {
       title: "Where is it located?",
       content: (
         <>
-        <div className="relative mb-4">
-          <input
-            type="text"
-            name="address_1"
-            value={formData.address_1 || ""}
-            onChange={handleChange}
-            placeholder="* 123 sesame street"
-            className="mt-2 w-full p-3.5 rounded-md text-black border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            required
-          />
-          {/* {errors.email && (
-            <p className="text-red-600 text-sm mt-8">{errors.address_1}</p>
-          )} */}
-        </div>
 
-        <div className="relative mb-4">  
-          <input
-            type="text"
-            name="address_2"
-            value={formData.address_2}
-            onChange={handleChange}
-            placeholder="Suite 300"
-            className="mt-2 w-full p-3.5 rounded-md text-black border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-          />
-          {errors.email && (
-            <p className="text-red-600 text-sm mt-1">{errors.address_2}</p>
-          )}
-        </div>
+          <div className="relative mb-4">
+            <input
+              type="text"
+              name="phone_number"
+              value={formData.phone_number || ""}
+              onChange={handleChange}
+              placeholder="* 111-111-1111"
+              className="mt-2 w-full p-3.5 rounded-md text-black border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              required
+            />
+            {errors.phone_number && (
+              <p className="text-red-600 text-sm mt-1">{errors.phone_number}</p>
+            )}
+          </div>
+          <div className="relative mb-4">
+            <input
+              type="text"
+              name="address_1"
+              value={formData.address_1 || ""}
+              onChange={handleChange}
+              placeholder="* 123 sesame street"
+              className="mt-2 w-full p-3.5 rounded-md text-black border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              required
+            />
+            {errors.address_1 && (
+              <p className="text-red-600 text-sm mt-1">{errors.address_1}</p>
+            )}
+          </div>
 
-        <div className="relative mb-4">  
-          <input
-            type="text"
-            name="city"
-            value={formData.city}
-            onChange={handleChange}
-            placeholder="* New York City"
-            className="mt-2 w-full p-3.5 rounded-md text-black border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            required
-          />
-          {errors.email && (
-            <p className="text-red-600 text-sm mt-3">{errors.city}</p>
-          )}
-        </div>
+          <div className="relative mb-4">
+            <input
+              type="text"
+              name="address_2"
+              value={formData.address_2}
+              onChange={handleChange}
+              placeholder="Suite 300"
+              className="mt-2 w-full p-3.5 rounded-md text-black border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            />
+            {errors.address_2 && (
+              <p className="text-red-600 text-sm mt-1">{errors.address_2}</p>
+            )}
+          </div>
 
-        <div className="relative mb-4">
-          <input
-            type="text"
-            name="state"
-            value={formData.state}
-            onChange={handleChange}
-            placeholder="* New York"
-            className="mt-2 w-full p-3.5 rounded-md text-black border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            required
-          />
-          {errors.email && (
-            <p className="text-red-600 px-2 text-sm mt-1">{errors.state}</p>
-          )}
-        </div>
-        <div>
-        <select
-            name="country"
-            value={formData.country}
-            onChange={handleChange}
-            className="mt-2 w-full p-3.5 rounded-md text-black border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            required
-          >
-            <option value="">Select a country</option>
-            {COUNTRY_CHOICES.map((country) => (
-              <option key={country.value} value={country.value}>
-                {country.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        
-        </>
-        
-        
-      ),
-    },
-    {
-      title: "Step 3: Enter your password",
-      content: (
-        <>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Password"
-            className="mt-2 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            required
-          />
-          {errors.password && (
-            <p className="text-red-600 text-sm mt-1">{errors.password}</p>
-          )}
-        </>
-      ),
-    },
-    {
-      title: "Step 4: Enter your age",
-      content: (
-        <>
-          <input
-            type="number"
-            name="age"
-            value={formData.age}
-            onChange={handleChange}
-            placeholder="Age"
-            className="mt-2 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-            required
-          />
-          {errors.age && (
-            <p className="text-red-600 text-sm mt-1">{errors.age}</p>
-          )}
+          <div className="relative mb-4">
+            <input
+              type="text"
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
+              placeholder="* New York City"
+              className="mt-2 w-full p-3.5 rounded-md text-black border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              required
+            />
+            {errors.city && (
+              <p className="text-red-600 text-sm mt-1">{errors.city}</p>
+            )}
+          </div>
+
+          <div className="relative mb-4">
+            <input
+              type="text"
+              name="state"
+              value={formData.state}
+              onChange={handleChange}
+              placeholder="* New York"
+              className="mt-2 w-full p-3.5 rounded-md text-black border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              required
+            />
+            {errors.state && (
+              <p className="text-red-600 text-sm mt-1">{errors.state}</p>
+            )}
+          </div>
+
+          <div className="relative mb-4">
+            <input
+              type="text"
+              name="zip_code"
+              value={formData.zip_code}
+              onChange={handleChange}
+              placeholder="* 12345"
+              className="mt-2 w-full p-3.5 rounded-md text-black border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              required
+            />
+            {errors.zip_code && (
+              <p className="text-red-600 text-sm mt-1">{errors.zip_code}</p>
+            )}
+          </div>
+
+          <div>
+            <select
+              name="country"
+              value={formData.country}
+              onChange={handleChange}
+              className="mt-2 w-full p-3.5 rounded-md text-black border-gray-300 shadow-md focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              required
+            >
+              <option value="">Select a country</option>
+              {COUNTRY_CHOICES.map((country) => (
+                <option key={country.value} value={country.value}>
+                  {country.label}
+                </option>
+              ))}
+            </select>
+            {errors.country && (
+              <p className="text-red-600 text-sm mt-1">{errors.country}</p>
+            )}
+          </div>
         </>
       ),
     },

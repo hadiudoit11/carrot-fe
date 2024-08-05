@@ -15,6 +15,7 @@ import {
   XMarkIcon,
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
+  Cog8ToothIcon
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { SessionProvider } from "next-auth/react";
@@ -22,17 +23,12 @@ import { SessionProvider } from "next-auth/react";
 
 const navigation = [
   { name: "Dashboard", href: "home", icon: HomeIcon, current: true },
-  {
-    name: "Organization",
-    href: "organization",
-    icon: UsersIcon,
-    current: false,
-  },
-  { name: "News", href: "News", icon: FolderIcon, current: false },
+  { name: "Organization", href: "organization", icon: UsersIcon, current: false },
+  { name: "News", href: "news", icon: FolderIcon, current: false },
   { name: "Projects", href: "projects", icon: CalendarIcon, current: false },
   { name: "Documents", href: "#", icon: DocumentDuplicateIcon, current: false },
-  { name: "Supply Chain", href: "#", icon: ChartPieIcon, current: false },
-];
+  { name: "Menu", href: "menu", icon: ChartPieIcon, current: false },
+  ];
 
 const teams = [
   { id: 1, name: "Heroicons", href: "#", initial: "H", current: false },
@@ -41,9 +37,13 @@ const teams = [
 ];
 
 const userNavigation = [
-  { name: "Your profile", href: "#" },
+  { name: "Your profile", href: "organization" },
   { name: "Sign out", href: "#" },
 ];
+
+const navBottom = [
+  { name: "Org Settings", href: "settings", icon: Cog8ToothIcon, current: false}
+]
 
 function classNames(
   ...classes: (string | undefined | null | boolean)[]
@@ -57,7 +57,7 @@ interface RootLayoutProps {
 
 export default function DashboardLayout({ children }: RootLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
   return (
 
@@ -284,21 +284,26 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
                     </ul>
                   </li>
                   <li className="-mx-6 mt-auto">
-                    <a>
-                      <div className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-white hover:bg-indigo-700">
-                        <Image
-                          className="h-8 w-8 rounded-full bg-indigo-700"
-                          src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                          alt=""
-                          width={32}
-                          height={32}
-                        />
-                        <span className="sr-only">Your profile</span>
-                        <span aria-hidden="true">
-                          {!sidebarCollapsed && ``}
-                        </span>
-                      </div>
-                    </a>
+                    {navBottom.map((item) => (
+                      <a
+                        href={item.href}
+                        className={classNames(
+                          item.current
+                            ? "bg-orange-700 text-white"
+                            : "text-indigo-100 hover:text-white hover:bg-orange-700",
+                          "group flex items-center gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                        )}
+                        key={item.href}
+                      >
+                        <div className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-white hover:bg-indigo-700">
+                          <Cog8ToothIcon className="h-6 w-6 text-white" aria-hidden="true" />
+                          <span className="sr-only">Your profile</span>
+                          <span aria-hidden="true">
+                            {!sidebarCollapsed && `Org Settings`}
+                          </span>
+                        </div>
+                      </a>
+                    ))}
                   </li>
                 </ul>
               </nav>
@@ -308,7 +313,7 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
           <div className="sticky top-0 z-40 flex items-center gap-x-6 bg-orange-600 px-4 py-4 shadow-sm sm:px-6 lg:hidden">
             <button
               type="button"
-              className="-m-2.5 p-2.5 text-indigo-200 lg:hidden"
+              className="-m-2.5 p-2.5 text-orange-200 lg:hidden"
               onClick={() => setSidebarOpen(true)}
             >
               <span className="sr-only text-black">Open sidebar</span>
@@ -320,7 +325,7 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
             <a href="#">
               <span className="sr-only">Your profile</span>
               <Image
-                className="h-8 w-8 rounded-full bg-indigo-700"
+                className="h-8 w-8 rounded-full bg-orange-700"
                 src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                 alt=""
                 width={32}

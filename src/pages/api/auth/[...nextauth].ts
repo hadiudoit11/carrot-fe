@@ -25,7 +25,7 @@ export async function refreshAccessToken(token) {
     return {
       ...token,
       accessToken: refreshedTokens.access,
-      accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
+      accessTokenExpires: Date.now() + refreshedTokens.expires_in * 10000,
       refreshToken: refreshedTokens.refresh ?? token.refreshToken,
     };
   } catch (error) {
@@ -53,13 +53,15 @@ export const authOptions: NextAuthOptions = {
         });
 
         const user = await res.json();
+        console.log(user)
         console.log('AuthServiceResponse:', user);
 
         if (res.ok && user) {
           // Return the user along with the organization information
           return {
             ...user,
-            organization: user.organization, // Assuming the organization data is included in the response
+            organization: user.organization,
+            organization_name: user.organization_name
           };
         } else {
           return null;
@@ -79,7 +81,8 @@ export const authOptions: NextAuthOptions = {
         token.refreshToken = user.refresh_token;
         token.accessTokenExpires = Date.now() + user.access_token_expires_in * 1000;
         token.email = user.email;
-        token.organization = user.organization; // Add organization data to the token
+        token.organization = user.organization
+        token.organization_name = user.organization_name; // Add organization data to the token
       }
 
       // If the access token has not expired, return the token
@@ -96,10 +99,12 @@ export const authOptions: NextAuthOptions = {
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
       session.user.email = token.email;
-      session.user.organization = token.organization; // Add organization data to the session
+      session.user.organization = token.organization
+      session.user.organization_name = token.organization_name
       if (token.error === 'RefreshAccessTokenError'){
         session.error = 'RefreshAccessTokenError';
       }
+      console.log(session)
       return session;
     },
 

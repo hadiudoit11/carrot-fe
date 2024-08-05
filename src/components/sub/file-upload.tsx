@@ -2,7 +2,7 @@ import { PlusIcon } from '@heroicons/react/20/solid'
 
 export default function FileUpload() {
   return (
-    <div className="text-center">
+    <div className="text-center bg-white rounded-lg p-8">
       <svg
         className="mx-auto h-12 w-12 text-gray-400"
         fill="none"

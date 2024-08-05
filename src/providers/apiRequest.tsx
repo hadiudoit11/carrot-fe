@@ -6,14 +6,14 @@ export async function apiRequest(url: string, method: string, body?: any): Promi
 
   if (!session) {
     console.error('No session found, please confirm session is being passed correctly');
-    return new Response(null, { status: 401, statusText: 'Unauthorized' });
+    return null;
   }
 
   let accessToken = session.accessToken;
 
   if (!accessToken) {
     console.error('No access token found, please make sure access token is being passed correctly');
-    return new Response(null, { status: 401, statusText: 'Unauthorized' });
+    return null;
   }
 
   let response = await fetch(url, {
@@ -23,7 +23,8 @@ export async function apiRequest(url: string, method: string, body?: any): Promi
       'Authorization': `Bearer ${accessToken}`,
     },
     body: body ? JSON.stringify(body) : null,
-  });
+  }
+);
 
   if (response.status === 401) {
     console.log("Access Token expired, refreshing now...");
@@ -32,7 +33,7 @@ export async function apiRequest(url: string, method: string, body?: any): Promi
 
     if (!refreshedTokens.accessToken) {
       console.error('Failed to refresh access token');
-      return new Response(null, { status: 401, statusText: 'Unauthorized' });
+      return null;
     }
 
     accessToken = refreshedTokens.accessToken;
@@ -43,17 +44,20 @@ export async function apiRequest(url: string, method: string, body?: any): Promi
         'Authorization': `Bearer ${accessToken}`,
       },
       body: body ? JSON.stringify(body) : null,
-    });
-  }
-
+      
+    }
+  );
+    console.log(body)
+    console.log(`apiRequest: ${response}`)
+  } 
+  
   if (response.ok) {
-    console.log('res_status:', response.status);
     const data = await response.json();
-    console.log('Fetched data:', data);
+    console.log(data)
     return data;
+
   } else {
-    console.error('Error fetching data:', response.statusText);
-    return null;
+     return null;
   }
 }
 
