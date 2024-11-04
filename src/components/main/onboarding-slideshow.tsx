@@ -115,7 +115,7 @@ const OnboardingSlideshow: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
-      const response = await apiPost("http://localhost:8000/api/v1/auth/organization-create/", formData);
+      const response = await apiPost("http://localhost:8000/api/v1/auth/organization/create/", formData);
       console.log(formData)
   
       if (response) {

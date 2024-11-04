@@ -1,86 +1,151 @@
-import { useState
+'use client';
 
- } from "react";
-import OrgSettings from "../sub/organization/org-settings";
-import Permissions from "../sub/permissions";
-import Roles from "../sub/roles";
+import { useEffect, useState, Fragment } from 'react';
+import AddUser from '@/components/sub/slideouts/add-user';
+import { apiGet } from '@/providers/apiRequest'; // Ensure this helper is implemented correctly
 
+function classNames(...classes) {
+  return classes.filter(Boolean).join(' ');
+}
 
-const tabs = [
-    { name: 'Organization', href: 'organization', current: false },
-    { name: 'Roles & Permissions', href: 'permissions', current: false },
-    { name: 'Integrations', href: 'integrations', current: true },
+export default function CreateUser() {
+  const [isSlideOverOpen, setSlideOverOpen] = useState(false);
+  const [locations, setLocations] = useState([]);
 
-  ]
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const response = await apiGet('http://localhost:8000/api/v1/auth/site/users/');
+        
+        // Debug: Check what the API response looks like
+        console.log('API Response:', response);
 
-  function classNames(...classes: string[]) {
-    return classes.filter(Boolean).join(' ');
-  }
-  
-  export default function SettingsHeader() {
-    const [currentTab, setCurrentTab] = useState(tabs.find(tab => tab.current).href);
-  
-    const renderContent = () => {
-      switch (currentTab) {
-        case 'organization':
-          return <div><OrgSettings /></div>;
-        case 'permissions':
-          return <div><Roles /></div>;
-        case 'integrations':
-          return <div>Integrations Content</div>;
-        default:
-          return null;
+        if (!response || !Array.isArray(response)) {
+          console.error('Invalid response format or no data from server');
+          return;
+        }
+
+        // Transform the data to match the locations format
+        const transformedData = response.map((site) => ({
+          name: site.name, // The name of the site
+          people: site.users.map((user) => ({
+            name: `${user.first_name} ${user.last_name}`, // Full name of the user
+            email: user.email, // Email of the user
+            title: 'User', // Placeholder title
+            role: 'Member', // Placeholder role
+          })),
+        }));
+
+        console.log('Transformed Data:', transformedData); // Debug the transformed data
+        setLocations(transformedData);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
       }
-    };
-  
-    return (
-      <div>
-        <div className="border-b pb-5 sm:pb-0">
-          <h3 className="text-base font-semibold leading-6 text-gray-900">Candidates</h3>
-          <div className="mt-3 sm:mt-4">
-            <div className="sm:hidden">
-              <label htmlFor="current-tab" className="sr-only">
-                Select a tab
-              </label>
-              <select
-                id="current-tab"
-                name="current-tab"
-                defaultValue={tabs.find((tab) => tab.current).name}
-                className="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                onChange={(e) => setCurrentTab(e.target.value)}
-              >
-                {tabs.map((tab) => (
-                  <option key={tab.name} value={tab.href}>
-                    {tab.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="hidden sm:block">
-              <nav className="-mb-px flex space-x-8">
-                {tabs.map((tab) => (
-                  <a
-                    key={tab.name}
-                    href="#"
-                    onClick={() => setCurrentTab(tab.href)}
-                    aria-current={currentTab === tab.href ? 'page' : undefined}
-                    className={classNames(
-                      currentTab === tab.href
-                        ? 'border-indigo-500 text-indigo-600'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                      'whitespace-nowrap border-b-2 px-1 pb-4 text-sm font-medium'
-                    )}
-                  >
-                    {tab.name}
-                  </a>
-                ))}
-              </nav>
-            </div>
-          </div>
+    }
+
+    fetchUsers();
+  }, []);
+
+  return (
+    <div className="bg-white p-8 rounded-lg">
+      <div className="sm:flex sm:items-center">
+        <div className="sm:flex-auto">
+          <h1 className="text-base font-semibold leading-6 text-gray-900">Users</h1>
+          <p className="mt-2 text-sm text-gray-700">
+            A list of all the users in your account including their name, title, email, and role.
+          </p>
         </div>
-        <div className="mt-6">
-          {renderContent()}
+        <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+          <button
+            type="button"
+            className="block rounded-md bg-orange-500 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-orange-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            onClick={() => setSlideOverOpen(true)}
+          >
+            Add user
+          </button>
         </div>
       </div>
-    );
-  }
+      <div className="mt-8 flow-root">
+        <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+            {locations.map((location) => (
+              <div key={location.name} className="mb-4">
+                <div className="bg-gray-50 py-2 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3 rounded-md">
+                  {location.name}
+                </div>
+                <div className="mt-2">
+                  <table className="min-w-full">
+                    <thead className="bg-white">
+                      <tr>
+                        <th
+                          scope="col"
+                          className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
+                        >
+                          Name
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                        >
+                          Title
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                        >
+                          Email
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                        >
+                          Role
+                        </th>
+                        <th
+                          scope="col"
+                          className="relative py-3.5 pl-3 pr-4 sm:pr-3"
+                        >
+                          <span className="sr-only">Edit</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white">
+                      {location.people.map((person, personIdx) => (
+                        <tr
+                          key={person.email}
+                          className={classNames(
+                            personIdx === 0 ? 'border-gray-300' : 'border-gray-200',
+                            'border-t'
+                          )}
+                        >
+                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">
+                            {person.name}
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            {person.title}
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            {person.email}
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                            {person.role}
+                          </td>
+                          <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
+                            <a href="#" className="text-orange-600 hover:text-indigo-900">
+                              Edit<span className="sr-only">, {person.name}</span>
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <AddUser open={isSlideOverOpen} setOpen={setSlideOverOpen} />
+    </div>
+  );
+}

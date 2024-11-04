@@ -4,12 +4,9 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { apiGet } from '@/providers/apiRequest';
-import AddRole from './slideouts/add-user';
+import AddRole from './slideouts/add-role';
 
-function classNames(...classes: (string | undefined | null | boolean)[]): string {
-  return classes.filter(Boolean).join(' ');
-}
-
+q
 export default function Roles() {
   const { data: session, status } = useSession();
   const [roles, setRoles] = useState([]);
@@ -113,9 +110,9 @@ export default function Roles() {
               </table>
             </div>
           </div>
-        </div>
-        <AddRole open={isSlideOverOpen} setOpen={setSlideOverOpen} role={selectedRole} />
+        </div>   
       </div>
+      <AddRole open={isSlideOverOpen} setOpen={setSlideOverOpen} role={selectedRole} />
     </div>
   );
 }

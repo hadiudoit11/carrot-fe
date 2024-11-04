@@ -6,6 +6,8 @@ import CreateUser from "@/components/sub/users";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Snapshot from "@/components/sub/organization/snapshot-org";
+import SiteMap from "@/components/sub/organization/mapshot";
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -22,8 +24,11 @@ export default function Home() {
 
   return (
     <div>
+      <div className='bg-gray-100 p-8'>
+        <Snapshot />
+      </div>
       <div>
-        {/* <Navbar /> */}
+        <SiteMap />
       </div>
       <div className="bg-gray-100 p-8">
         <CreateUser />

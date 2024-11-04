@@ -3,7 +3,7 @@ import { Dialog, Transition } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import AddUserForm from '@/components/sub/forms/add-user-form';
 
-export default function AddUser({ open, setOpen }) {
+export default function AddUser({ open, setOpen, user, re }) {
   return (
     <Transition.Root show={open} as="div" className="relative z-10 ">
       <Dialog as="div" className="fixed inset-0 overflow-hidden" onClose={setOpen}>
