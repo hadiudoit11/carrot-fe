@@ -6,11 +6,11 @@ import L from 'leaflet';
 
 // Configure the default icon for Leaflet markers
 const DefaultIcon = new L.Icon({
-  iconUrl: 'https://cdn-icons-png.freepik.com/256/15692/15692786.png?semt=ais_hybrid',
+  iconUrl: 'https://cdn-icons-png.freepik.com/256/15692/15692786.png?semt=ais_hybrid', // Ensure this URL is valid
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
-  shadowUrl: '/leaflet/marker-shadow.png',
+  shadowUrl: '/leaflet/marker-shadow.png', // Make sure this shadow icon exists in your public folder
   shadowSize: [41, 41],
 });
 
@@ -37,14 +37,14 @@ export default function SiteMap() {
   }, []);
 
   return (
-    <div className="h-[500px] w-full">
-      <MapContainer center={[37.7749, -122.4194]} zoom={5} className="h-full w-full">
+    <div className="h-[500px] w-full z-0">
+      <MapContainer center={[40.7240704, -73.8394112]} zoom={5} className="h-full w-full">
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         {sites.map((site, index) => (
-          site.latitude && site.longitude && ( // Ensure latitude and longitude are available
+          site.latitude && site.longitude && (
             <Marker key={index} position={[site.latitude, site.longitude]}>
               <Popup>
                 <div>

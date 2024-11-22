@@ -1,184 +1,184 @@
-import React, { Fragment, useState } from "react";
-import MenuItem from "./menu-item.jsx";
+import React from 'react';
 import {
-  RiBold,
-  RiItalic,
-  RiStrikethrough,
-  RiCodeView,
-  RiMarkPenLine,
-  RiDivideLine,
-  RiH1,
-  RiH2,
-  RiParagraph,
-  RiListUnordered,
-  RiListOrdered,
-  RiListCheck2,
-  RiCodeBoxLine,
-  RiDoubleQuotesL,
-  RiDashboardHorizontalLine,
-  RiTrelloLine,
-  RiFormatClear,
-  RiGradienterLine,
-  RiArrowGoBackFill,
-  RiArrowGoForwardFill,
-  RiImageAddLine,
+  FaBold,
+  FaItalic,
+  FaUnderline,
+  FaStrikethrough,
+  FaAlignLeft,
+  FaAlignCenter,
+  FaAlignRight,
+  FaListUl,
+  FaListOl,
+  FaQuoteLeft,
+  FaUndo,
+  FaRedo,
+  FaLink,
+  FaUnlink,
+  FaImage,
+} from 'react-icons/fa';
 
-} from "@remixicon/react";
-import "@/components/sub/menu/menu-bar.scss";
+const MenuBar = ({ editor }) => {
+  if (!editor) {
+    return null;
+  }
 
-export default ({ editor }) => {
- 
-
-  const items = [
-    {
-      icon: RiBold,
-      title: "Bold",
-      action: () => editor.chain().focus().toggleBold().run(),
-      isActive: () => editor.isActive("bold"),
-    },
-    {
-      icon: RiItalic,
-      title: "Italic",
-      action: () => editor.chain().focus().toggleItalic().run(),
-      isActive: () => editor.isActive("italic"),
-    },
-    {
-      icon: RiStrikethrough,
-      title: "Strike",
-      action: () => editor.chain().focus().toggleStrike().run(),
-      isActive: () => editor.isActive("strike"),
-    },
-    {
-      icon: RiCodeView,
-      title: "Code",
-      action: () => editor.chain().focus().toggleCode().run(),
-      isActive: () => editor.isActive("code"),
-    },
-    {
-      icon: RiMarkPenLine,
-      title: "Highlight",
-      action: () => editor.chain().focus().toggleHighlight().run(),
-      isActive: () => editor.isActive("Highlight"),
-    },
-    {
-      type: "divider",
-    },
-    {
-      icon: RiH1,
-      title: "Heading 1",
-      action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
-      isActive: () => editor.isActive("heading", { level: 1 }),
-    },
-    {
-      icon: RiH2,
-      title: "Heading 2",
-      action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
-      isActive: () => editor.isActive("heading", { level: 2 }),
-    },
-    {
-      icon: RiParagraph,
-      title: "Paragraph",
-      action: () => editor.chain().focus().setParagraph().run(),
-      isActive: () => editor.isActive("paragraph"),
-    },
-    {
-      icon: RiListUnordered,
-      title: "Bullet list",
-      action: () => editor.chain().focus().toggleBulletList().run(),
-      isActive: () => editor.isActive("bulletList"),
-    },
-    {
-      icon: RiListOrdered,
-      title: "Ordered list",
-      action: () => editor.chain().focus().toggleOrderedList().run(),
-      isActive: () => editor.isActive("orderedList"),
-    },
-    {
-      icon: RiListCheck2,
-      title: "Task list",
-      action: () => editor.chain().focus().toggleTaskList().run(),
-      isActive: () => editor.isActive("taskList"),
-    },
-    {
-      icon: RiCodeBoxLine,
-      title: "Code block",
-      action: () => editor.chain().focus().toggleCodeBlock().run(),
-      isActive: () => editor.isActive("codeBlock"),
-    },
-    {
-      type: "divider",
-    },
-    {
-      icon: RiDoubleQuotesL,
-      title: "Blockquote",
-      action: () => editor.chain().focus().toggleBlockquote().run(),
-      isActive: () => editor.isActive("blockquote"),
-    },
-    {
-      icon: RiDashboardHorizontalLine,
-      title: "Horizontal rule",
-      action: () => editor.chain().focus().setHorizontalRule().run(),
-    },
-    {
-      type: "divider",
-    },
-    {
-      icon: RiGradienterLine,
-      title: "Hard break",
-      action: () => editor.chain().focus().setHardBreak().run(),
-    },
-    {
-      icon: RiFormatClear,
-      title: "Clear format",
-      action: () => editor.chain().focus().clearNodes().unsetAllMarks().run(),
-    },
-    {
-      type: "divider",
-    },
-    {
-      icon: RiArrowGoBackFill,
-      title: "Undo",
-      action: () => editor.chain().focus().undo().run(),
-    },
-    {
-      icon: RiArrowGoForwardFill,
-      title: "Redo",
-      action: () => editor.chain().focus().redo().run(),
-    },
-    {
-      icon: RiImageAddLine,
-      title: "Add Image",
-      action: () => {
-        const url = window.prompt("Enter the image URL");
-        if (url) {
-          editor.chain().focus().setImage({ src: url }).run();
-        }
-      },
-    },
-
-  ];
+  const headingLevels = [1, 2, 3, 4, 5, 6];
 
   return (
-    <div className="flex items-center bg-green-900 border-b-3 border-black rounded-lg p-1 flex-wrap w-10/12">
-      {items.map((item, index) => (
-        <Fragment key={index}>
-          {item.type === "divider" ? (
-            <div className="divider" />
-          ) : (
-            <MenuItem {...item}>
-              <item.icon />
-            </MenuItem>
-          )}
-        </Fragment>
-      ))}
-      <button 
-        className="ml-auto flex items-right text-green-950 font-bold bg-white rounded-lg px-4 py-1"
-
+    <div className="menu-bar flex flex-wrap bg-gray-100 border-b border-gray-300 px-4 py-2 items-center">
+      {/* Undo and Redo */}
+      <button
+        onClick={() => editor.chain().focus().undo().run()}
+        disabled={!editor.can().undo()}
+        className="mr-2 p-2"
       >
-        Publish
+        <FaUndo />
       </button>
-      
+      <button
+        onClick={() => editor.chain().focus().redo().run()}
+        disabled={!editor.can().redo()}
+        className="mr-2 p-2"
+      >
+        <FaRedo />
+      </button>
 
+      {/* Formatting Buttons */}
+      <button
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        className={`mr-2 p-2 ${editor.isActive('bold') ? 'is-active' : ''}`}
+      >
+        <FaBold />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        className={`mr-2 p-2 ${editor.isActive('italic') ? 'is-active' : ''}`}
+      >
+        <FaItalic />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleUnderline().run()}
+        className={`mr-2 p-2 ${editor.isActive('underline') ? 'is-active' : ''}`}
+      >
+        <FaUnderline />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleStrike().run()}
+        className={`mr-2 p-2 ${editor.isActive('strike') ? 'is-active' : ''}`}
+      >
+        <FaStrikethrough />
+      </button>
+
+      {/* Heading Levels */}
+      <select
+        onChange={(e) => {
+          const level = e.target.value;
+          if (level === 'paragraph') {
+            editor.chain().focus().setParagraph().run();
+          } else {
+            editor.chain().focus().toggleHeading({ level: Number(level) }).run();
+          }
+        }}
+        value={
+          editor.isActive('heading', { level: 1 })
+            ? '1'
+            : editor.isActive('heading', { level: 2 })
+            ? '2'
+            : editor.isActive('heading', { level: 3 })
+            ? '3'
+            : editor.isActive('heading', { level: 4 })
+            ? '4'
+            : editor.isActive('heading', { level: 5 })
+            ? '5'
+            : editor.isActive('heading', { level: 6 })
+            ? '6'
+            : 'paragraph'
+        }
+        className="mr-2 p-1 border border-gray-300 rounded"
+      >
+        <option value="paragraph">Normal text</option>
+        {headingLevels.map((level) => (
+          <option key={level} value={level}>
+            Heading {level}
+          </option>
+        ))}
+      </select>
+
+      {/* Text Alignment */}
+      <button
+        onClick={() => editor.chain().focus().setTextAlign('left').run()}
+        className={`mr-2 p-2 ${editor.isActive({ textAlign: 'left' }) ? 'is-active' : ''}`}
+      >
+        <FaAlignLeft />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setTextAlign('center').run()}
+        className={`mr-2 p-2 ${editor.isActive({ textAlign: 'center' }) ? 'is-active' : ''}`}
+      >
+        <FaAlignCenter />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setTextAlign('right').run()}
+        className={`mr-2 p-2 ${editor.isActive({ textAlign: 'right' }) ? 'is-active' : ''}`}
+      >
+        <FaAlignRight />
+      </button>
+
+      {/* Lists */}
+      <button
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        className={`mr-2 p-2 ${editor.isActive('bulletList') ? 'is-active' : ''}`}
+      >
+        <FaListUl />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        className={`mr-2 p-2 ${editor.isActive('orderedList') ? 'is-active' : ''}`}
+      >
+        <FaListOl />
+      </button>
+
+      {/* Blockquote */}
+      <button
+        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        className={`mr-2 p-2 ${editor.isActive('blockquote') ? 'is-active' : ''}`}
+      >
+        <FaQuoteLeft />
+      </button>
+
+      {/* Insert Link */}
+      <button
+        onClick={() => {
+          const url = prompt('Enter URL');
+          if (url) {
+            editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+          }
+        }}
+        className={`mr-2 p-2 ${editor.isActive('link') ? 'is-active' : ''}`}
+      >
+        <FaLink />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().unsetLink().run()}
+        disabled={!editor.isActive('link')}
+        className="mr-2 p-2"
+      >
+        <FaUnlink />
+      </button>
+
+      {/* Insert Image */}
+      <button
+        onClick={() => {
+          const url = prompt('Enter image URL');
+          if (url) {
+            editor.chain().focus().setImage({ src: url }).run();
+          }
+        }}
+        className="mr-2 p-2"
+      >
+        <FaImage />
+      </button>
     </div>
   );
 };
+
+export default MenuBar;

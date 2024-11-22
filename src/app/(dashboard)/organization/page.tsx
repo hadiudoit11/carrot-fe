@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Snapshot from "@/components/sub/organization/snapshot-org";
 import SiteMap from "@/components/sub/organization/mapshot";
+import SectionHeader from "@/components/sub/organization/section-header";
+import SiteList from "@/components/sub/organization/site-list";
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -24,14 +26,22 @@ export default function Home() {
 
   return (
     <div>
-      <div className='bg-gray-100 p-8'>
+      <div className="bg-gray-100 p-8">
         <Snapshot />
       </div>
-      <div>
+      <div className=''>
         <SiteMap />
       </div>
-      <div className="bg-gray-100 p-8">
-        <CreateUser />
+      {/* Updated to use a grid layout */}
+      <div className="bg-gray-100 p-8 z-10 grid grid-cols-2 gap-4">
+        {/* First Column */}
+        <div className="bg-white p-4 rounded-lg shadow">
+          <SiteList />
+        </div>
+        {/* Second Column */}
+        <div className="bg-white p-4 rounded-lg shadow">
+        
+        </div>
       </div>
     </div>
   );

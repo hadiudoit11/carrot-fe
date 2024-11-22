@@ -2,10 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Your existing variables and styles */
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
+  --form-font-color: #333333; 
 }
 
 @media (prefers-color-scheme: dark) {
@@ -17,7 +19,7 @@
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
+  color: #333333;
   background: #fff;
 }
 
@@ -35,7 +37,6 @@ body {
   --tw-ring-color: transparent;
 }
 
-
 .gradient {
   position: relative;
   background-image: repeating-linear-gradient(
@@ -51,10 +52,6 @@ body {
   background-clip: text;
 }
 
-.content .ProseMirror {
-  @apply outline-none;
-}
-
 @keyframes gradimate {
   0% {
     background-position-x: 0%;
@@ -65,4 +62,116 @@ body {
   100% {
     background-position-x: 200%;
   }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  z-index: 50; /* High enough to sit above other content */
+}
+
+.leaflet-container {
+  z-index: 0; /* Ensure the map stays behind other elements */
+  position: relative; /* Maintain proper positioning */
+}
+
+/* Additional styles for the editor and menu bar */
+.menu-bar {
+  @apply flex flex-wrap bg-gray-100 border-b border-gray-300 px-4 py-2 items-center;
+  
+  button {
+    @apply mr-2 p-2 bg-transparent border-none cursor-pointer text-gray-700;
+    
+    &:hover {
+      @apply bg-gray-200;
+    }
+    
+    &.is-active {
+      @apply bg-gray-300;
+    }
+  }
+}
+
+.ProseMirror {
+  outline: none;
+  max-width: 8.5in; /* Similar to A4 paper width */
+  margin: 0 auto;
+  padding: .5in;
+  box-sizing: border-box;
+  min-height: calc(100vh - 150px); /* Adjust based on your header/footer height */
+  
+  p {
+    margin: 0 0 1em;
+  }
+}
+
+
+.menu-bar {
+  display: flex;
+  flex-wrap: wrap;
+  background-color: #f1f3f4;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.menu-bar button {
+  margin-right: 5px;
+  padding: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #5f6368;
+}
+
+.menu-bar button:hover {
+  background-color: #e8e8e8;
+}
+
+.menu-bar button.is-active {
+  background-color: #e0e0e0;
+}
+
+.menu-bar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Ensure unordered lists use disc bullets */
+.ProseMirror ul {
+  list-style-type: disc;
+  list-style-position: inside;
+  margin-left: 1.5em; /* Adjust as needed */
+}
+
+/* Ensure ordered lists use decimal numbering */
+.ProseMirror ol {
+  list-style-type: decimal;
+  list-style-position: inside;
+  margin-left: 1.5em; /* Adjust as needed */
+}
+
+/* Set the marker color for list items */
+.ProseMirror ul li::marker,
+.ProseMirror ol li::marker {
+  color: var(--text-color, #333333); /* Or your desired text color */
+}
+
+/* Remove any unwanted margins or padding */
+.ProseMirror li {
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure paragraphs inside list items display inline */
+.ProseMirror li p {
+  display: inline;
+  margin: 0;
+}
+
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
 }

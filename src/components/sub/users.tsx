@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Fragment } from 'react';
 import AddUser from './slideouts/add-user';
-import { apiGet } from '@/providers/apiRequest'; // Ensure this helper is implemented correctly
+import { apiGet } from '@/providers/apiRequest';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
@@ -16,29 +16,25 @@ export default function CreateUser() {
   useEffect(() => {
     async function fetchSites() {
       try {
-        // Fetch the site data
         const response = await apiGet('http://localhost:8000/api/v1/auth/site/users/');
         if (!response) {
           console.error('No response from server');
           return;
         }
 
-        // Assuming the response has a 'data' object with the site information
-        const site = response.data;
-        const transformedData = [
-          {
-            siteName: site.name,
-            users: site.user.map((userId) => ({
-              id: userId, // Assuming userId is a unique identifier
-              name: site.legal_entity_name || 'Unknown User', // Adjust this based on your actual user data
-              title: 'Site Admin', // Customize this or derive it from your data
-              email: site.contact_email || 'No Email',
-              role: site.is_verified ? 'Verified' : 'Unverified',
-            })),
-          },
-        ];
+        // Assuming the response is an array of site objects
+        const transformedData = response.map((site) => ({
+          siteName: site.name,
+          users: site.user.map((user) => ({
+            id: user, // Use the user ID
+            name: `${user.first_name} ${user.last_name}`, // Adjust based on your data
+            title: 'Site Admin', // Placeholder title
+            email: user.email, // Use the actual email
+            role: site.is_verified ? 'Verified' : 'Unverified',
+          })),
+        }));
 
-        console.log('Transformed Data:', transformedData); // Debugging line
+        console.log('Transformed Data:', transformedData);
         setSites(transformedData);
       } catch (error) {
         console.error('Failed to fetch sites:', error);
@@ -48,7 +44,6 @@ export default function CreateUser() {
     fetchSites();
   }, []);
 
-  // Toggle drawer open/close
   const toggleSite = (siteName) => {
     setOpenSites((prev) => ({
       ...prev,
@@ -160,7 +155,9 @@ export default function CreateUser() {
           </div>
         </div>
       </div>
+      <div className="z-50">
       <AddUser open={isSlideOverOpen} setOpen={setSlideOverOpen} />
+      </div>
     </div>
   );
 }
