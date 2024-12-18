@@ -5,31 +5,51 @@ import { apiGet } from '@/providers/apiRequest';
 import SiteUpdate from '../slideouts/update-site';
 import SiteCreate from '../slideouts/create-site';
 
-function classNames(...classes) {
+interface User {
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
+interface Person {
+  name: string;
+  email: string;
+  title: string;
+  role: string;
+}
+
+interface Location {
+  id: number;
+  name: string;
+  people: Person[];
+}
+
+function classNames(
+  ...classes: (string | undefined | null | boolean)[]
+): string {
   return classes.filter(Boolean).join(' ');
 }
 
 export default function SiteList() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
-  const [locations, setLocations] = useState([]);
-  const [selectedSiteId, setSelectedSiteId] = useState(null);
-  const [openLocationIndex, setOpenLocationIndex] = useState(null);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null);
+  const [openLocationIndex, setOpenLocationIndex] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchSites() {
       try {
         const response = await apiGet('http://localhost:8000/api/v1/auth/site/users/');
-        
         if (!response || !Array.isArray(response)) {
           console.error('Invalid response format or no data from server');
           return;
         }
 
-        const transformedData = response.map((site) => ({
+        const transformedData: Location[] = response.map((site: any) => ({
           id: site.id,
           name: site.name,
-          people: site.users.map((user) => ({
+          people: site.users.map((user: User) => ({
             name: `${user.first_name} ${user.last_name}`,
             email: user.email,
             title: 'User',
@@ -46,7 +66,7 @@ export default function SiteList() {
     fetchSites();
   }, []);
 
-  const toggleLocation = (index) => {
+  const toggleLocation = (index: number) => {
     setOpenLocationIndex(openLocationIndex === index ? null : index);
   };
 

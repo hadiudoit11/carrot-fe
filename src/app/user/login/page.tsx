@@ -18,6 +18,8 @@ const Login: React.FC = () => {
       email,
       password,
     });
+
+    console.log("SignIn result:", result);
     
     if (result && !result.error) {
       router.push("/home");

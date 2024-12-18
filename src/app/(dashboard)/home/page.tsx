@@ -1,3 +1,4 @@
+// src/app/(dashboard)/home/page.tsx
 "use client";
 
 import HomeArticles from "@/components/main/dashboard-home";
@@ -12,11 +13,15 @@ import { useEffect } from "react";
 export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
+
   useEffect(() => {
     if (status === 'loading') return; // Do nothing while loading
-    if (session?.error === 'RefreshAccessTokenError') router.push('/user/login'); // Redirect if not authenticated
-    if (!session?.user.organization) router.push('/onboarding');
-    console.log(`home/page.tsx line 19: ${session?.user.organization}`)
+    if (session?.error === 'RefreshAccessTokenError') {
+      router.push('/user/login'); // Redirect if not authenticated
+    } else if (!session?.user?.organization) {
+      router.push('/onboarding'); // Redirect if user is not onboarded
+    }
+    console.log(`home/page.tsx line 19: ${session?.user?.organization}`);
   }, [session, status, router]);
 
   if (status === 'loading') {
@@ -24,22 +29,21 @@ export default function Home() {
   }
 
   return (
-    <div className = 'bg-gray-100 p-10'>
-      <div className = 'pb-8'>
-        <Snapshot/>
+    <div className='bg-gray-100 p-10'>
+      <div className='pb-8'>
+        <Snapshot />
       </div>
       <div>
         <ArticleSnapshot />
       </div>
-      <div className= "grid grid-cols-2 mt-8">
-        <div className= "lg:mr-4">
-          <HomeFeed/>
+      <div className="grid grid-cols-2 mt-8">
+        <div className="lg:mr-4">
+          <HomeFeed />
         </div>
-        <div className= "lg:ml-4 bg-white rounded-lg">
-
+        <div className="lg:ml-4 bg-white rounded-lg">
+          {/* Additional content */}
         </div>
       </div>
-
       <div>
         <ProjectSummary />
       </div>

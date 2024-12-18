@@ -6,18 +6,24 @@ import { useRouter } from 'next/navigation';
 import { apiGet } from '@/providers/apiRequest';
 import AddRole from './slideouts/add-role';
 
-q
+interface Role {
+  id: number;
+  name: string;
+  description: string; // Add the description property
+  // Include other properties that a role might have
+}
+
 export default function Roles() {
   const { data: session, status } = useSession();
-  const [roles, setRoles] = useState([]);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [isSlideOverOpen, setSlideOverOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState(null);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const data = await apiGet('http://localhost:8000/api/v1/access/roles/');
+        const data: Role[] = await apiGet('http://localhost:8000/api/v1/access/roles/');
         if (!data) {
           console.error('Response is undefined');
           return;
@@ -25,7 +31,7 @@ export default function Roles() {
 
         console.log('Fetched data:', data);
         if (Array.isArray(data)) {
-          setRoles(data); 
+          setRoles(data);
         } else {
           console.error('Fetched data is not an array:', data);
         }
@@ -39,7 +45,7 @@ export default function Roles() {
     }
   }, [status, router]);
 
-  const handleEditClick = (role) => {
+  const handleEditClick = (role: Role) => {
     setSelectedRole(role);
     setSlideOverOpen(true);
   };
@@ -74,43 +80,56 @@ export default function Roles() {
         <div className="mt-8 flow-root">
           <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead>
-                  <tr>
-                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">
-                      Role Name
-                    </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Description
-                    </th>
-                    <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-0">
-                      <span className="sr-only">Edit</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {roles.map((role) => (
-                    <tr key={role.id}>
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">
-                        {role.name}
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{role.description}</td>
-                      <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                        <a 
-                          href="#"
-                          className="text-indigo-600 hover:text-indigo-900"
-                          onClick={() => handleEditClick(role)}
-                        >
-                          Edit<span className="sr-only">, {role.name}</span>
-                        </a>
-                      </td>
+              <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                <table className="min-w-full divide-y divide-gray-300">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th
+                        scope="col"
+                        className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                      >
+                        Name
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      >
+                        Description
+                      </th>
+                      <th
+                        scope="col"
+                        className="relative py-3.5 pl-3 pr-4 sm:pr-6"
+                      >
+                        <span className="sr-only">Edit</span>
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 bg-white">
+                    {roles.map((role) => (
+                      <tr key={role.id}>
+                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                          {role.name}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                          {role.description}
+                        </td>
+                        <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                          <a
+                            href="#"
+                            className="text-indigo-600 hover:text-indigo-900"
+                            onClick={() => handleEditClick(role)}
+                          >
+                            Edit<span className="sr-only">, {role.name}</span>
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>   
+        </div>
       </div>
       <AddRole open={isSlideOverOpen} setOpen={setSlideOverOpen} role={selectedRole} />
     </div>

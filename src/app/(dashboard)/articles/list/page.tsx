@@ -1,12 +1,13 @@
+
 "use client";
 
-import Tiptap from "@/components/main/tip-tap";
-import NavbarArticles from "@/components/sub/navbars/navbar-articles";
+import ArticlesGridList from "@/components/main/articles-list";
+import ArticleCreateButton from "@/components/sub/articles/article-create";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-export default function ArticlesCreate() {
+export default function ArticlesList() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -20,10 +21,12 @@ export default function ArticlesCreate() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
-      <NavbarArticles />
-      <div className="flex-1">
-        <Tiptap />
+    <div className="p-8">
+        <div>
+            <ArticleCreateButton />
+        </div>
+        <div className="flex flex-col">
+        <ArticlesGridList />
       </div>
     </div>
   );

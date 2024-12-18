@@ -50,7 +50,7 @@ export default function AddRole({ open, setOpen, role }) {
                       </div>
                     </div>
                     <div className="relative mt-6 flex-1 px-4 sm:px-6">
-                      <Permissions role={role} />
+                      {/* <Permissions role={role} /> */}
                     </div>
                   </div>
                 </Dialog.Panel>

@@ -1,11 +1,16 @@
 "use client";
 
 
+import GoogleLogin from "@/app/user/social/GoogleLogin";
 import FileUpload from "@/components/sub/file-upload";
 import Navbar from "@/components/sub/navbars/navbar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+
+
+
+
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -27,6 +32,10 @@ export default function Home() {
         </div>
         <div className="p-8 mt-8">
             <FileUpload />
+        </div>
+        <div className='bg-black'>
+            <GoogleLogin backendAuthUrl="http://localhost:8000/api/v1/auth/oauth/google/callback/"/>
+
         </div>
     </div>
   );

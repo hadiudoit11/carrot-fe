@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      platform: linux/arm64
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+    # Removed volume mounts to prevent overwriting node_modules with host machine files
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules
+    command: ["npm", "start"]

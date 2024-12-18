@@ -1,42 +1,54 @@
 'use client';
 
-import { useEffect, useState, Fragment } from 'react';
+import { useEffect, useState } from 'react';
 import AddUser from '@/components/sub/slideouts/add-user';
-import { apiGet } from '@/providers/apiRequest'; // Ensure this helper is implemented correctly
+import { apiGet } from '@/providers/apiRequest';
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ');
+interface User {
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
+interface Site {
+  name: string;
+  users: User[];
+}
+
+interface TransformedSite {
+  name: string;
+  people: {
+    name: string;
+    email: string;
+    title: string;
+    role: string;
+  }[];
 }
 
 export default function CreateUser() {
   const [isSlideOverOpen, setSlideOverOpen] = useState(false);
-  const [locations, setLocations] = useState([]);
+  const [locations, setLocations] = useState<TransformedSite[]>([]);
 
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const response = await apiGet('http://localhost:8000/api/v1/auth/site/users/');
-        
-        // Debug: Check what the API response looks like
-        console.log('API Response:', response);
+        const response: Site[] = await apiGet('http://localhost:8000/api/v1/auth/site/users/');
 
         if (!response || !Array.isArray(response)) {
           console.error('Invalid response format or no data from server');
           return;
         }
 
-        // Transform the data to match the locations format
-        const transformedData = response.map((site) => ({
-          name: site.name, // The name of the site
+        const transformedData: TransformedSite[] = response.map((site) => ({
+          name: site.name,
           people: site.users.map((user) => ({
-            name: `${user.first_name} ${user.last_name}`, // Full name of the user
-            email: user.email, // Email of the user
-            title: 'User', // Placeholder title
-            role: 'Member', // Placeholder role
+            name: `${user.first_name} ${user.last_name}`,
+            email: user.email,
+            title: 'User',
+            role: 'Member',
           })),
         }));
 
-        console.log('Transformed Data:', transformedData); // Debug the transformed data
         setLocations(transformedData);
       } catch (error) {
         console.error('Failed to fetch users:', error);
@@ -66,84 +78,77 @@ export default function CreateUser() {
         </div>
       </div>
       <div className="mt-8 flow-root">
-        <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-            {locations.map((location) => (
-              <div key={location.name} className="mb-4">
-                <div className="bg-gray-50 py-2 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3 rounded-md">
-                  {location.name}
-                </div>
-                <div className="mt-2">
-                  <table className="min-w-full">
-                    <thead className="bg-white">
-                      <tr>
-                        <th
-                          scope="col"
-                          className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
-                        >
-                          Name
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                        >
-                          Title
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                        >
-                          Email
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                        >
-                          Role
-                        </th>
-                        <th
-                          scope="col"
-                          className="relative py-3.5 pl-3 pr-4 sm:pr-3"
-                        >
-                          <span className="sr-only">Edit</span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white">
-                      {location.people.map((person, personIdx) => (
-                        <tr
-                          key={person.email}
-                          className={classNames(
-                            personIdx === 0 ? 'border-gray-300' : 'border-gray-200',
-                            'border-t'
-                          )}
-                        >
-                          <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">
-                            {person.name}
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                            {person.title}
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                            {person.email}
-                          </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                            {person.role}
-                          </td>
-                          <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
-                            <a href="#" className="text-orange-600 hover:text-indigo-900">
-                              Edit<span className="sr-only">, {person.name}</span>
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
+        {locations.map((location) => (
+          <div key={location.name} className="mb-4">
+            <div className="bg-gray-50 py-2 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3 rounded-md">
+              {location.name}
+            </div>
+            <div className="mt-2">
+              <table className="min-w-full">
+                <thead className="bg-white">
+                  <tr>
+                    <th
+                      scope="col"
+                      className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-3"
+                    >
+                      Name
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    >
+                      Title
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    >
+                      Email
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    >
+                      Role
+                    </th>
+                    <th
+                      scope="col"
+                      className="relative py-3.5 pl-3 pr-4 sm:pr-3"
+                    >
+                      <span className="sr-only">Edit</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white">
+                  {location.people.map((person, personIdx) => (
+                    <tr
+                      key={person.email}
+                      className={personIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                    >
+                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-3">
+                        {person.name}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                        {person.title}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                        {person.email}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                        {person.role}
+                      </td>
+                      <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-3">
+                        <a href="#" className="text-indigo-600 hover:text-indigo-900">
+                          Edit<span className="sr-only">, {person.name}</span>
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        ))}
       </div>
       <AddUser open={isSlideOverOpen} setOpen={setSlideOverOpen} />
     </div>

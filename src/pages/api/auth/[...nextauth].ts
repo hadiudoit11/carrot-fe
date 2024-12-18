@@ -1,9 +1,10 @@
-// api/auth/[...nextauth].ts
+// src/pages/api/auth/[...nextauth].ts
 
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { JWT, User } from 'next-auth';
 
-export async function refreshAccessToken(token) {
+export async function refreshAccessToken(token: JWT): Promise<JWT> {
   try {
     const response = await fetch('http://localhost:8000/api/v1/auth/token/refresh/', {
       method: 'POST',
@@ -25,7 +26,7 @@ export async function refreshAccessToken(token) {
     return {
       ...token,
       accessToken: refreshedTokens.access,
-      accessTokenExpires: Date.now() + refreshedTokens.expires_in * 10000,
+      accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
       refreshToken: refreshedTokens.refresh ?? token.refreshToken,
     };
   } catch (error) {
@@ -53,7 +54,7 @@ export const authOptions: NextAuthOptions = {
         });
 
         const user = await res.json();
-        console.log(user)
+        console.log(user);
         console.log('AuthServiceResponse:', user);
 
         if (res.ok && user) {
@@ -61,8 +62,8 @@ export const authOptions: NextAuthOptions = {
           return {
             ...user,
             organization: user.organization,
-            organization_name: user.organization_name
-          };
+            organization_name: user.organization_name,
+          } as User;
         } else {
           return null;
         }
@@ -75,13 +76,13 @@ export const authOptions: NextAuthOptions = {
     encryption: false,
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: JWT; user?: User }): Promise<JWT> {
       if (user) {
         token.accessToken = user.access_token;
         token.refreshToken = user.refresh_token;
         token.accessTokenExpires = Date.now() + user.access_token_expires_in * 1000;
         token.email = user.email;
-        token.organization = user.organization
+        token.organization = user.organization;
         token.organization_name = user.organization_name; // Add organization data to the token
       }
 
@@ -94,21 +95,19 @@ export const authOptions: NextAuthOptions = {
       console.log('Access token expired, refreshing...');
       return refreshAccessToken(token);
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: JWT }): Promise<Session> {
       console.log('Session callback called');
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
-      session.user.email = token.email;
-      session.user.organization = token.organization
-      session.user.organization_name = token.organization_name
-      if (token.error === 'RefreshAccessTokenError'){
+      session.user.email = token.email!;
+      session.user.organization = token.organization;
+      session.user.organization_name = token.organization_name;
+      if (token.error === 'RefreshAccessTokenError') {
         session.error = 'RefreshAccessTokenError';
       }
-      console.log(session)
+      console.log(session);
       return session;
     },
-
-      
   },
   pages: {
     signIn: '/user/login',

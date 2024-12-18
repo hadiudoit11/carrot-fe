@@ -23,7 +23,7 @@ export default function Home() {
             <p className="mt-2 text-sm leading-6 text-gray-500">
               Not a member?{" "}
               <Link
-                href="/user/register"
+                href="/user/register/"
                 className="font-semibold text-orange-600 hover:text-indigo-500"
               >
                 Create a free account now

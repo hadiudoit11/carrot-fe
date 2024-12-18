@@ -29,14 +29,14 @@ const MenuBar = ({ editor }) => {
       {/* Undo and Redo */}
       <button
         onClick={() => editor.chain().focus().undo().run()}
-        disabled={!editor.can().undo()}
+        disabled={!editor.can().chain().focus().undo().run()}
         className="mr-2 p-2"
       >
         <FaUndo />
       </button>
       <button
         onClick={() => editor.chain().focus().redo().run()}
-        disabled={!editor.can().redo()}
+        disabled={!editor.can().chain().focus().redo().run()}
         className="mr-2 p-2"
       >
         <FaRedo />
