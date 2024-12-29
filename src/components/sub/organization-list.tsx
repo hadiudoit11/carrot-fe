@@ -18,6 +18,18 @@ const locations = [
       },
     ],
   },
+  {
+    name: "London",
+    people: [],
+  },
+  {
+    name: "Paris",
+    people: [],
+  },
+  {
+    name: "Tokyo",
+    people: [],
+  },
   // More people...
 ];
 
