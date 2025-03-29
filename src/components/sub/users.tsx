@@ -1,35 +1,63 @@
 'use client';
 
-import { useEffect, useState, Fragment } from 'react';
+import { useEffect, useState } from 'react';
 import AddUser from './slideouts/add-user';
 import { apiGet } from '@/providers/apiRequest';
 
-function classNames(...classes) {
+// Define interfaces for the API response
+interface ApiUser {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
+interface ApiSite {
+  name: string;
+  user: ApiUser[];
+  is_verified: boolean;
+}
+
+// Define interfaces for the transformed data
+interface TransformedUser {
+  id: string;
+  name: string;
+  title: string;
+  email: string;
+  role: string;
+}
+
+interface TransformedSite {
+  siteName: string;
+  users: TransformedUser[];
+}
+
+// Add the classNames utility function
+function classNames(...classes: (string | undefined | null | boolean)[]) {
   return classes.filter(Boolean).join(' ');
 }
 
 export default function CreateUser() {
   const [isSlideOverOpen, setSlideOverOpen] = useState(false);
-  const [sites, setSites] = useState([]);
-  const [openSites, setOpenSites] = useState({});
+  const [sites, setSites] = useState<TransformedSite[]>([]);
+  const [openSites, setOpenSites] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     async function fetchSites() {
       try {
-        const response = await apiGet('http://localhost:8000/api/v1/auth/site/users/');
+        const response = await apiGet('http://localhost:8000/api/v1/auth/site/users/') as ApiSite[];
         if (!response) {
           console.error('No response from server');
           return;
         }
 
-        // Assuming the response is an array of site objects
-        const transformedData = response.map((site) => ({
+        const transformedData: TransformedSite[] = response.map((site: ApiSite) => ({
           siteName: site.name,
-          users: site.user.map((user) => ({
-            id: user, // Use the user ID
-            name: `${user.first_name} ${user.last_name}`, // Adjust based on your data
-            title: 'Site Admin', // Placeholder title
-            email: user.email, // Use the actual email
+          users: site.user.map((user: ApiUser) => ({
+            id: user.id,
+            name: `${user.first_name} ${user.last_name}`,
+            title: 'Site Admin',
+            email: user.email,
             role: site.is_verified ? 'Verified' : 'Unverified',
           })),
         }));
@@ -44,7 +72,7 @@ export default function CreateUser() {
     fetchSites();
   }, []);
 
-  const toggleSite = (siteName) => {
+  const toggleSite = (siteName: string) => {
     setOpenSites((prev) => ({
       ...prev,
       [siteName]: !prev[siteName],
@@ -73,7 +101,7 @@ export default function CreateUser() {
       <div className="mt-8 flow-root">
         <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-            {sites.map((site) => (
+            {sites.map((site: TransformedSite) => (
               <div key={site.siteName} className="mb-4">
                 <div
                   onClick={() => toggleSite(site.siteName)}
@@ -155,9 +183,9 @@ export default function CreateUser() {
           </div>
         </div>
       </div>
-      <div className="z-50">
-      <AddUser open={isSlideOverOpen} setOpen={setSlideOverOpen} />
-      </div>
+      {isSlideOverOpen && (
+        <AddUser open={isSlideOverOpen} setOpen={setSlideOverOpen} />
+      )}
     </div>
   );
 }

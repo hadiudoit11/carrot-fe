@@ -5,13 +5,26 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      platform: linux/arm64
     ports:
       - "3000:3000"
     environment:
-      NODE_ENV: production
-    # Removed volume mounts to prevent overwriting node_modules with host machine files
-    # volumes:
-    #   - .:/app
-    #   - /app/node_modules
-    command: ["npm", "start"]
+      NODE_ENV: development
+      NEXTAUTH_SECRET: "0Xw0YATU1D3rRHpaBhE3DsccN7a+3K9N4QTtdUQ/TzI="
+      NEXTAUTH_URL: "http://localhost:3000"
+      BACKEND_URL: "http://host.docker.internal:8000"
+      NEXT_PUBLIC_BACKEND_URL: "http://localhost:8000"
+      DEBUG: "true"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    command: ["npm", "run", "dev"]
+    env_file:
+      - .env.local
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next

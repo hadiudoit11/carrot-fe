@@ -5,25 +5,27 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { apiGet } from '@/providers/apiRequest';
 import AddRole from './slideouts/add-role';
+import { Permission } from '@/types';
+import type { Role as RoleType } from '@/types';
 
-interface Role {
-  id: number;
-  name: string;
-  description: string; // Add the description property
-  // Include other properties that a role might have
+interface RoleComponentProps {
+  role: RoleType;
+  permissions?: Permission[];
+  onEdit?: (roleId: string) => void;
+  onDelete?: (roleId: string) => void;
 }
 
 export default function Roles() {
   const { data: session, status } = useSession();
-  const [roles, setRoles] = useState<Role[]>([]);
+  const [roles, setRoles] = useState<RoleType[]>([]);
   const [isSlideOverOpen, setSlideOverOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const [selectedRole, setSelectedRole] = useState<RoleType | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const data: Role[] = await apiGet('http://localhost:8000/api/v1/access/roles/');
+        const data: RoleType[] = await apiGet('http://localhost:8000/api/v1/access/roles/');
         if (!data) {
           console.error('Response is undefined');
           return;
@@ -45,7 +47,7 @@ export default function Roles() {
     }
   }, [status, router]);
 
-  const handleEditClick = (role: Role) => {
+  const handleEditClick = (role: RoleType) => {
     setSelectedRole(role);
     setSlideOverOpen(true);
   };

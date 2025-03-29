@@ -1,0 +1,42 @@
+name: Deploy Application
+
+on:
+  push:
+    branches: [ main, production ]  # Trigger on push to these branches
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to Docker Hub  # Or your container registry
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: your-username/your-app:latest
+        build-args: |
+          NODE_ENV=production
+        secrets: |
+          NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
+          NEXT_PUBLIC_BACKEND_URL=${{ secrets.NEXT_PUBLIC_BACKEND_URL }}
+
+    - name: Deploy to Production  # Example for deploying to a cloud service
+      if: github.ref == 'refs/heads/production'
+      run: |
+        # Add deployment commands here
+        echo "Deploying to production..." 

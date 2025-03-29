@@ -1,14 +1,6 @@
 // src/types/next-auth.d.ts
 
-import NextAuth from "next-auth";
-
-declare module "next-auth" {
-  interface Session {
-    accessToken?: string;
-    refreshToken?: string;
-    error?: string;
-  }
-}
+import type { DefaultSession } from "next-auth";
 
 declare module "next-auth" {
   interface Session {
@@ -19,7 +11,7 @@ declare module "next-auth" {
       email: string;
       organization?: string;
       organization_name?: string;
-    };
+    } & DefaultSession["user"];
   }
 
   interface User {

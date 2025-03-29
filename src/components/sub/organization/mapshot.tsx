@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -30,8 +32,10 @@ interface Site {
 
 export default function SiteMap() {
   const [sites, setSites] = useState<Site[]>([]);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
     async function fetchSites() {
       try {
         const response: Site[] = await apiGet('http://localhost:8000/api/v1/auth/site/list/');
@@ -47,6 +51,10 @@ export default function SiteMap() {
 
     fetchSites();
   }, []);
+
+  if (!isClient) {
+    return null; // or a loading state
+  }
 
   return (
     <div className="h-[500px] w-full z-0">

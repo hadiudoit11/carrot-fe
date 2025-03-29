@@ -1,24 +1,25 @@
 'use client'
-import { ReactNode } from 'react';
-import { SessionProvider, useSession } from "next-auth/react";
-import './globals.css'; 
-import { redirect } from 'next/navigation';
 
-interface RootLayoutProps {
-  children: ReactNode;
-}
+import { SessionProvider } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
-}
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [mounted, setMounted] = useState(false);
 
-
-export default function RootLayout({ children }: RootLayoutProps) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
-    <html lang="en" className='h-full bg-white'>
-      <body className='h-full bg-gray-100'>
-        <SessionProvider>{children}</SessionProvider>
+    <html lang="en">
+      <body>
+        <SessionProvider>
+          {mounted ? children : null}
+        </SessionProvider>
       </body>
     </html>
   );

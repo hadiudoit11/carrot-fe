@@ -2,35 +2,14 @@ import { Dialog, Transition } from '@headlessui/react';
 import { Fragment, useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { apiPost, apiGet } from '@/providers/apiRequest';
+import { SiteCreateProps, FormData, User } from '@/types';
 
-interface User {
-  id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-  // Add other properties as needed
+interface CreateSiteFormData extends Omit<FormData, 'user'> {
+  user: string[]; // Store only user IDs
 }
 
-interface FormData {
-  name: string;
-  phone_number: string;
-  address_1: string;
-  address_2: string;
-  city: string;
-  state: string;
-  zip_code: string;
-  legal_entity_name: string;
-  contact_email: string;
-  user: number[]; // Change from never[] to number[]
-}
-
-interface SiteUpdateProps {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-}
-
-export default function SiteUpdate({ open, setOpen }: SiteUpdateProps) {
-  const [formData, setFormData] = useState<FormData>({
+export default function SiteCreate({ open, setOpen }: SiteCreateProps) {
+  const [formData, setFormData] = useState<CreateSiteFormData>({
     name: '',
     phone_number: '',
     address_1: '',
@@ -40,7 +19,7 @@ export default function SiteUpdate({ open, setOpen }: SiteUpdateProps) {
     zip_code: '',
     legal_entity_name: '',
     contact_email: '',
-    user: [], // to hold the selected user IDs
+    user: [],
   });
 
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -51,15 +30,17 @@ export default function SiteUpdate({ open, setOpen }: SiteUpdateProps) {
     async function fetchAllUsers() {
       try {
         const response: User[] = await apiGet('http://localhost:8000/api/v1/auth/organization/users/');
-        setAllUsers(response || []);
-        setFilteredUsers(response || []);
+        setAllUsers(response);
+        setFilteredUsers(response);
       } catch (error) {
         console.error('Failed to fetch users:', error);
       }
     }
 
-    fetchAllUsers();
-  }, []);
+    if (open) {
+      fetchAllUsers();
+    }
+  }, [open]);
 
   useEffect(() => {
     setFilteredUsers(
@@ -81,6 +62,23 @@ export default function SiteUpdate({ open, setOpen }: SiteUpdateProps) {
       ...prev,
       user: [...prev.user, user.id],
     }));
+  };
+
+  const handleRemoveUser = (userId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      user: prev.user.filter((id) => id !== userId),
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await apiPost('http://localhost:8000/api/v1/auth/site/create/', formData);
+      setOpen(false);
+    } catch (error) {
+      console.error('Failed to create site:', error);
+    }
   };
 
   return (

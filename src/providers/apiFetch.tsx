@@ -1,69 +1,91 @@
 // apiFetch.tsx
 
-import { refreshAccessToken } from "@/pages/api/auth/[...nextauth]";
-import { getSession } from "next-auth/react";
-import { Session } from "next-auth";
+import { getSession, signOut } from 'next-auth/react';
+import type { Session } from 'next-auth';
 
-// Type for Session with custom fields
 interface CustomSession extends Session {
-  accessToken: string;
-  refreshToken: string;
-  accessTokenExpires: number;
+  accessToken?: string;
+  refreshToken?: string;
+  accessTokenExpires?: number;
+  error?: string;
 }
 
-export async function apiFetch(url: string, options: RequestInit = {}): Promise<any> {
-  const session = (await getSession()) as CustomSession;
+interface RefreshedTokens {
+  accessToken: string;
+  refreshToken: string;
+  accessTokenExpires?: number;
+}
 
-  if (!session) {
-    console.error('No session found, please confirm session is being set correctly at login');
-    return new Response(null, { status: 401, statusText: 'Unauthorized' });
-  }
+async function refreshAccessToken(token: string): Promise<RefreshedTokens> {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/token/refresh/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        refresh: token,
+      }),
+    });
 
-  let { accessToken, accessTokenExpires, refreshToken } = session;
+    const refreshedTokens = await response.json();
 
-  if (!accessToken) {
-    console.error('No access token found in session');
-    return new Response(null, { status: 401, statusText: 'Unauthorized' });
-  }
-
-  // Check if the access token is expired or close to expiring
-  if (Date.now() >= accessTokenExpires - 60000) { // Refresh if token will expire in the next minute
-    console.log("Access Token expired or close to expiring, refreshing now...");
-
-    const refreshedTokens = await refreshAccessToken({ refreshToken });
-
-    if (!refreshedTokens.accessToken) {
-      console.error('Failed to refresh access token');
-      return new Response(null, { status: 401, statusText: 'Unauthorized' });
+    if (!response.ok) {
+      throw refreshedTokens;
     }
 
-    // Update session with new tokens
-    accessToken = refreshedTokens.accessToken;
-    accessTokenExpires = refreshedTokens.accessTokenExpires;
-    refreshToken = refreshedTokens.refreshToken;
-    
-    // Update session with new token details
-    session.accessToken = accessToken;
-    session.accessTokenExpires = accessTokenExpires;
-    session.refreshToken = refreshToken;
+    return {
+      accessToken: refreshedTokens.access,
+      refreshToken: refreshedTokens.refresh,
+      accessTokenExpires: Date.now() + 4 * 60 * 1000, // 4 minutes
+    };
+  } catch (error) {
+    console.error('Error refreshing token:', error);
+    throw error;
+  }
+}
+
+export async function fetchWithToken(url: string, options: RequestInit = {}) {
+  let accessToken: string | undefined;
+  let refreshToken: string | undefined;
+  let accessTokenExpires: number = 0;
+
+  const session = await getSession() as CustomSession | null;
+  if (session) {
+    accessToken = session.accessToken;
+    refreshToken = session.refreshToken;
+    accessTokenExpires = session.accessTokenExpires ?? 0;
   }
 
-  const res = await fetch(url, {
+  if (accessTokenExpires && Date.now() > accessTokenExpires && refreshToken) {
+    try {
+      const refreshedTokens = await refreshAccessToken(refreshToken);
+      
+      accessToken = refreshedTokens.accessToken;
+      accessTokenExpires = refreshedTokens.accessTokenExpires ?? Date.now() + 4 * 60 * 1000;
+      refreshToken = refreshedTokens.refreshToken;
+
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      await signOut();
+      throw new Error('Your session has expired. Please sign in again.');
+    }
+  }
+
+  const headers = new Headers(options.headers);
+  if (accessToken) {
+    headers.set('Authorization', `Bearer ${accessToken}`);
+  }
+
+  const response = await fetch(url, {
     ...options,
-    headers: {
-      ...options.headers,
-      Authorization: `Bearer ${accessToken}`,
-    },
+    headers,
   });
 
-  // Check for successful response and log the data
-  if (res.ok) {
-    console.log('res_status:', res.status)
-    const data = await res.json();
-    console.log('Fetched data:', data);
-    return data;
-  } else {
-    console.error('Error fetching data:', res.statusText);
-    return null;
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || 'An error occurred while fetching the data.');
   }
+
+  return response.json();
 }

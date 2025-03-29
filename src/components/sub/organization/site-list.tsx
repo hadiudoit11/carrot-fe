@@ -4,25 +4,7 @@ import { useEffect, useState } from 'react';
 import { apiGet } from '@/providers/apiRequest';
 import SiteUpdate from '../slideouts/update-site';
 import SiteCreate from '../slideouts/create-site';
-
-interface User {
-  first_name: string;
-  last_name: string;
-  email: string;
-}
-
-interface Person {
-  name: string;
-  email: string;
-  title: string;
-  role: string;
-}
-
-interface Location {
-  id: number;
-  name: string;
-  people: Person[];
-}
+import { Location, Person, SiteListProps } from '@/types';
 
 function classNames(
   ...classes: (string | undefined | null | boolean)[]
@@ -30,11 +12,15 @@ function classNames(
   return classes.filter(Boolean).join(' ');
 }
 
-export default function SiteList() {
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+export default function SiteList({
+  isCreateOpen = false,
+  setIsCreateOpen = () => {},
+  isUpdateOpen = false,
+  setIsUpdateOpen = () => {},
+  selectedSiteId = null,
+  setSelectedSiteId = () => {},
+}: SiteListProps) {
   const [locations, setLocations] = useState<Location[]>([]);
-  const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null);
   const [openLocationIndex, setOpenLocationIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -49,7 +35,7 @@ export default function SiteList() {
         const transformedData: Location[] = response.map((site: any) => ({
           id: site.id,
           name: site.name,
-          people: site.users.map((user: User) => ({
+          people: site.users.map((user: any) => ({
             name: `${user.first_name} ${user.last_name}`,
             email: user.email,
             title: 'User',
