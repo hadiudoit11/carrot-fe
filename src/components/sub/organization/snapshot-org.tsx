@@ -18,7 +18,8 @@ export default function Snapshot() {
     async function fetchSiteAndUserInfo() {
       try {
         // Fetch data for the number of sites
-        const sitesResponse = await apiGet('http://localhost:8000/api/v1/auth/site/list/');
+        const backendURL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
+        const sitesResponse = await apiGet(`${backendURL}/api/v1/auth/site/list/`);
         if (!sitesResponse || !Array.isArray(sitesResponse)) {
           console.error('Invalid response format or no data from sites server');
           return;
@@ -26,7 +27,7 @@ export default function Snapshot() {
         const numberOfSites = sitesResponse.length;
 
         // Fetch data for the number of users
-        const usersResponse = await apiGet('http://localhost:8000/api/v1/auth/organization/users/');
+        const usersResponse = await apiGet(`${backendURL}/api/v1/auth/organization/users/`);
         if (!usersResponse || !Array.isArray(usersResponse)) {
           console.error('Invalid response format or no data from users server');
           return;

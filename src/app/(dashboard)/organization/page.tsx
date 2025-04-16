@@ -8,17 +8,23 @@ import { useRouter } from "next/navigation";
 import dynamic from 'next/dynamic';
 import Snapshot from "@/components/sub/organization/snapshot-org";
 import SiteList from "@/components/sub/organization/site-list";
+import Mapshot from "@/components/sub/organization/mapshot";
 
 // Import Mapshot component dynamically with SSR disabled
-const Mapshot = dynamic(
-  () => import('@/components/sub/organization/mapshot'),
-  { ssr: false } // This ensures the component only loads on the client side
-);
+// const Mapshot = dynamic(
+//   () => import('@/components/sub/organization/mapshot'),
+//   { ssr: false } // This ensures the component only loads on the client side
+// );
 
 export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
+  
+  // Add state for the slideouts
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isUpdateOpen, setIsUpdateOpen] = useState(false);
+  const [selectedSiteId, setSelectedSiteId] = useState(null);
 
   useEffect(() => {
     if (status === 'loading') return; // Do nothing while loading
@@ -50,7 +56,14 @@ export default function Home() {
       <div className="bg-gray-100 p-8 z-10 grid grid-cols-2 gap-4">
         {/* First Column */}
         <div className="bg-white p-4 rounded-lg shadow">
-          <SiteList />
+          <SiteList 
+            isCreateOpen={isCreateOpen}
+            setIsCreateOpen={setIsCreateOpen}
+            isUpdateOpen={isUpdateOpen}
+            setIsUpdateOpen={setIsUpdateOpen}
+            selectedSiteId={selectedSiteId}
+            setSelectedSiteId={setSelectedSiteId}
+          />
         </div>
         {/* Second Column */}
         <div className="bg-white p-4 rounded-lg shadow">

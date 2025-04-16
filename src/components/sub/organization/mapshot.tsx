@@ -38,7 +38,10 @@ export default function SiteMap() {
     setIsClient(true);
     async function fetchSites() {
       try {
-        const response: Site[] = await apiGet('http://localhost:8000/api/v1/auth/site/list/');
+        const backendURL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
+        console.log(`MapShot: Using backend URL: ${backendURL}`);
+        
+        const response: Site[] = await apiGet(`${backendURL}/api/v1/auth/site/list/`);
         if (!response || !Array.isArray(response)) {
           console.error('Invalid response format or no data from server');
           return;

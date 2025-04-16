@@ -1,3 +1,4 @@
+'use clients'
 import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/20/solid'
 
 const stats = [

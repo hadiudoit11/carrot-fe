@@ -115,16 +115,29 @@ const OnboardingSlideshow: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
-      const response = await apiPost("http://localhost:8000/api/v1/auth/organization/create/", formData);
-      console.log(formData)
+      const backendURL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
+      
+      // Debug the URL and environment variables
+      console.log("Backend URL from env:", backendURL);
+      console.log("NEXT_PUBLIC_BACKEND_URL:", process.env.NEXT_PUBLIC_BACKEND_URL);
+      console.log("BACKEND_URL:", process.env.BACKEND_URL);
+      
+      const url = `${backendURL}/api/v1/auth/organization/create/`;
+      console.log("Full request URL:", url);
+      console.log("Form data being sent:", formData);
+      
+      const response = await apiPost(url, formData);
   
       if (response) {
         console.log("Submission successful:", response);
         router.push("/home");
       } else {
-        console.error("Submission failed");
+        setGeneralError("Submission failed - no response returned");
+        console.error("Submission failed - no response returned");
       }
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error?.message || "Unknown error occurred";
+      setGeneralError(`Error: ${errorMessage}`);
       console.error("Error submitting form:", error);
     }
   };

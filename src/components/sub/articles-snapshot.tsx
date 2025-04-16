@@ -10,6 +10,7 @@ export default function ArticlesSnapshot() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL;
         const result = await apiGet('/api/articles');
         setData(result);
       } catch (error) {

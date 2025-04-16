@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    user: "node"
+    environment:
+      - NODE_ENV=development
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=django-insecure-qo^-^gy@&7_k6tc03)jci*u60za#-yjlsbfq!j+3$hh!g42()m
+      - BACKEND_URL=http://web:8000
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:80
+      - DEBUG=true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    command: ["npm", "run", "dev"]
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - carrot-network
+
+networks:
+  carrot-network:
+    external: true
+    name: carrot-network  # Use the same name as backend

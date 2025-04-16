@@ -26,12 +26,12 @@ export default function SiteList({
   useEffect(() => {
     async function fetchSites() {
       try {
-        const response = await apiGet('http://localhost:8000/api/v1/auth/site/users/');
+        const backendURL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
+        const response = await apiGet(`${backendURL}/api/v1/auth/site/users/`);
         if (!response || !Array.isArray(response)) {
           console.error('Invalid response format or no data from server');
           return;
         }
-
         const transformedData: Location[] = response.map((site: any) => ({
           id: site.id,
           name: site.name,
@@ -57,9 +57,19 @@ export default function SiteList({
   };
 
   const handleEditClick = (siteId) => {
-    setSelectedSiteId(siteId); // Set the selected site ID
-    setIsUpdateOpen(true); // Open the update component
+    console.log('Edit clicked:', { siteId });
+    setSelectedSiteId(siteId);
+    setIsUpdateOpen(true);
+    console.log('States updated:', { isUpdateOpen: true, selectedSiteId: siteId });
   };
+
+  useEffect(() => {
+    console.log("isCreateOpen state changed:", isCreateOpen);
+  }, [isCreateOpen]);
+
+  useEffect(() => {
+    console.log("isUpdateOpen state changed:", isUpdateOpen);
+  }, [isUpdateOpen]);
 
   return (
     <div className="relative bg-white p-8 rounded-lg">
@@ -74,7 +84,12 @@ export default function SiteList({
           <button
             type="button"
             className="block rounded-md bg-orange-500 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-orange-500"
-            onClick={() => setIsCreateOpen(true)}
+            onClick={() => {
+              console.log("Add Site button clicked");
+              console.log("Before state update:", isCreateOpen);
+              setIsCreateOpen(true);
+              console.log("After immediate check:", isCreateOpen); // Will likely still show false due to React's state batching
+            }}
           >
             Add Site
           </button>
@@ -139,8 +154,10 @@ export default function SiteList({
         </div>
       </div>
 
-      <SiteUpdate open={isUpdateOpen} setOpen={setIsUpdateOpen} siteId={selectedSiteId} />
-      <SiteCreate open={isCreateOpen} setOpen={setIsCreateOpen} />
+      <div className="z-50 relative">
+        <SiteUpdate open={isUpdateOpen} setOpen={setIsUpdateOpen} siteId={selectedSiteId} />
+        <SiteCreate open={isCreateOpen} setOpen={setIsCreateOpen} />
+      </div>
     </div>
   );
 }

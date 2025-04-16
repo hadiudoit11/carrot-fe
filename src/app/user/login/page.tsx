@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { getSession } from "next-auth/react";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -13,19 +14,26 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const result = await signIn("credentials", {
-      redirect: false,
-      email,
-      password,
-    });
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
 
-    console.log("SignIn result:", result);
-    
-    if (result && !result.error) {
-      router.push("/home");
-    } else {
-      setError(result?.error || "Login failed");
-      console.error("Login error:", result?.error);
+      console.log("SignIn result:", result);
+      
+      const session = await getSession();
+      console.log("Session after login:", session);
+      
+      if (result && !result.error) {
+        router.push("/home");
+      } else {
+        setError(result?.error || "Login failed");
+        console.error("Login error:", result?.error);
+      }
+    } catch (err) {
+      console.error("Login exception:", err);
     }
   };
 
