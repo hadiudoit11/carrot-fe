@@ -1,41 +1,42 @@
 "use client";
 
-
 import GoogleLogin from "@/app/user/social/GoogleLogin";
 import FileUpload from "@/components/sub/file-upload";
 import Navbar from "@/components/sub/navbars/navbar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import BoardList from "@/components/projects/BoardList";
-
-
-
+import { useEffect, useState } from "react";
+import ProjectList from "@/components/projects/ProjectList";
 
 export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  
   useEffect(() => {
     if (status === 'loading') return; // Do nothing while loading
-    if (session?.error === 'RefreshAccessTokenError') router.push('/user/login'); // Redirect if not authenticated
-    console.log(session?.error)
+    
+    setIsLoading(false);
+    
+    if (session?.error === 'RefreshAccessTokenError') {
+      router.push('/user/login');
+      return;
+    }
+    
+    console.log(session?.error);
   }, [session, status, router]);
 
-  if (status === 'loading') {
-    return <div>Loading...</div>; // Display a loading state while fetching session
+  if (status === 'loading' || isLoading) {
+    return <div className="text-text-primary font-secondary">Loading...</div>;
   }
 
   return (
-    <div className="bg-gray-100">
-        <div>
-          <Navbar />
-        </div>
-        <div className="p-8 mt-8">
-            <FileUpload />
-        </div>
-        <div className='bg-black'>
-          <BoardList />
-        </div>
+    <div className="bg-bg-main p-8 text-text-primary">
+      <h1 className="text-3xl font-bold mb-6 font-primary">Projects</h1>
+
+      <div className="w-full rounded-lg bg-tertiary border-2 border-border-accent overflow-hidden shadow-accent-offset">
+        <ProjectList />
+      </div>
     </div>
   );
 }

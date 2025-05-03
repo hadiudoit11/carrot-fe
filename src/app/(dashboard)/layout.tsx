@@ -60,7 +60,6 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
   return (
-
         <div>
           <Transition.Root show={sidebarOpen} as={Fragment}>
             <Dialog
@@ -76,7 +75,7 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
               >
-                <div className="fixed inset-0 bg-gray-900/80" />
+                <div className="fixed inset-0 bg-bg-dark/80" />
               </Transition.Child>
 
               <div className="fixed inset-0 flex">
@@ -105,18 +104,18 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
                           className="-m-2.5 p-2.5"
                           onClick={() => setSidebarOpen(false)}
                         >
-                          <span className="sr-only text-black">
+                          <span className="sr-only">
                             Close sidebar
                           </span>
                           <XMarkIcon
-                            className="h-6 w-6 text-white"
+                            className="h-6 w-6 text-text-primary"
                             aria-hidden="true"
                           />
                         </button>
                       </div>
                     </Transition.Child>
                     {/* Sidebar component, swap this element with another sidebar if you like */}
-                    <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-orange-600 px-6 pb-2">
+                    <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-bg-main px-6 pb-2 font-secondary">
                       <div className="flex h-16 shrink-0 items-center">
                         <Image
                           className="h-8 w-auto"
@@ -139,28 +138,28 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
                                     href={item.href}
                                     className={classNames(
                                       item.current
-                                        ? "bg-indigo-700 text-white"
-                                        : "text-indigo-200 hover:text-white hover:bg-orange-700",
+                                        ? "bg-secondary text-primary"
+                                        : "text-text-primary hover:text-primary hover:bg-secondary",
                                       "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold",
                                     )}
                                   >
                                     <item.icon
                                       className={classNames(
                                         item.current
-                                          ? "text-white"
-                                          : "text-indigo-200 group-hover:text-white",
+                                          ? "text-primary"
+                                          : "text-text-primary group-hover:text-primary",
                                         "h-6 w-6 shrink-0",
                                       )}
                                       aria-hidden="true"
                                     />
-                                    {item.name}
+                                    <span className="font-primary">{item.name}</span>
                                   </Link>
                                 </li>
                               ))}
                             </ul>
                           </li>
                           <li>
-                            <div className="text-xs font-semibold leading-6 text-indigo-200">
+                            <div className="text-xs font-semibold leading-6 text-text-secondary font-primary">
                               Your teams
                             </div>
                             <ul role="list" className="-mx-2 mt-2 space-y-1">
@@ -170,15 +169,15 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
                                     href={team.href}
                                     className={classNames(
                                       team.current
-                                        ? "bg-indigo-700 text-white"
-                                        : "text-indigo-200 hover:text-white hover:bg-orange-700",
+                                        ? "bg-secondary text-primary"
+                                        : "text-text-primary hover:text-primary hover:bg-secondary",
                                       "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold",
                                     )}
                                   >
-                                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-orange-400 bg-orange-500 text-[0.625rem] font-medium text-white">
+                                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-accent bg-secondary text-[0.625rem] font-medium text-primary font-primary">
                                       {team.initial}
                                     </span>
-                                    <span className="truncate">
+                                    <span className="truncate font-secondary">
                                       {team.name}
                                     </span>
                                   </Link>
@@ -203,7 +202,7 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
             )}
           >
             {/* Sidebar component, swap this element with another sidebar if you like */}
-            <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-orange-500 px-6">
+            <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-bg-navbar px-6 font-secondary">
               <div className="flex h-16 shrink-0 items-center justify-between">
                 <Image
                   className="h-8 w-auto pb-1"
@@ -215,12 +214,12 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
                 <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)}>
                   {sidebarCollapsed ? (
                     <ChevronDoubleRightIcon
-                      className="h-6 w-6 text-white"
+                      className="h-6 w-6 text-accent"
                       aria-hidden="true"
                     />
                   ) : (
                     <ChevronDoubleLeftIcon
-                      className="h-6 w-6 text-white"
+                      className="h-6 w-6 text-accent"
                       aria-hidden="true"
                     />
                   )}
@@ -236,29 +235,29 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
                             href={item.href}
                             className={classNames(
                               item.current
-                                ? "bg-orange-700 text-white"
-                                : "text-gray-100 hover:text-white hover:bg-orange-700",
+                                ? "bg-secondary text-primary"
+                                : "text-text-primary hover:text-primary hover:bg-secondary",
                               "group flex items-center gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold",
                             )}
                           >
                             <item.icon
                               className={classNames(
                                 item.current
-                                  ? "text-white"
-                                  : "text-indigo-200 group-hover:text-white",
+                                  ? "text-primary"
+                                  : "text-accent group-hover:text-primary",
                                 "h-6 w-6 shrink-0",
                               )}
                               aria-hidden="true"
                             />
-                            {!sidebarCollapsed && item.name}
+                            {!sidebarCollapsed && <span className="font-primary">{item.name}</span>}
                           </a>
                         </li>
                       ))}
                     </ul>
                   </li>
                   <li>
-                    <div className="text-xs font-semibold leading-6 text-indigo-100">
-                      Your teams
+                    <div className="text-xs font-semibold leading-6 text-text-secondary font-primary">
+                      {!sidebarCollapsed && "Your teams"}
                     </div>
                     <ul role="list" className="-mx-2 mt-2 space-y-1">
                       {teams.map((team) => (
@@ -267,15 +266,15 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
                             href={team.href}
                             className={classNames(
                               team.current
-                                ? "bg-orange-700 text-white"
-                                : "text-indigo-100 hover:text-white hover:bg-orange-700",
+                                ? "bg-secondary text-primary"
+                                : "text-text-primary hover:text-primary hover:bg-secondary",
                               "group flex items-center gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold",
                             )}
                           >
-                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-orange-400 bg-orange-600 text-[0.625rem] font-medium text-white">
+                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-accent bg-secondary text-[0.625rem] font-medium text-primary font-primary">
                               {team.initial}
                             </span>
-                            <span className="truncate">
+                            <span className="truncate font-secondary">
                               {!sidebarCollapsed && team.name}
                             </span>
                           </a>
@@ -289,16 +288,16 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
                         href={item.href}
                         className={classNames(
                           item.current
-                            ? "bg-orange-700 text-white"
-                            : "text-indigo-100 hover:text-white hover:bg-orange-700",
+                            ? "bg-secondary text-primary"
+                            : "text-accent hover:text-primary hover:bg-secondary",
                           "group flex items-center gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
                         )}
                         key={item.href}
                       >
-                        <div className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-white hover:bg-indigo-700">
-                          <Cog8ToothIcon className="h-6 w-6 text-white" aria-hidden="true" />
+                        <div className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-accent">
+                          <Cog8ToothIcon className="h-6 w-6 text-accent" aria-hidden="true" />
                           <span className="sr-only">Your profile</span>
-                          <span aria-hidden="true">
+                          <span aria-hidden="true" className="font-primary">
                             {!sidebarCollapsed && `Org Settings`}
                           </span>
                         </div>
@@ -310,22 +309,22 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
             </div>
           </div>
 
-          <div className="sticky top-0 z-40 flex items-center gap-x-6 bg-orange-600 px-4 py-4 shadow-sm sm:px-6 lg:hidden">
+          <div className="sticky top-0 z-40 flex items-center gap-x-6 bg-secondary px-4 py-4 shadow-sm sm:px-6 lg:hidden">
             <button
               type="button"
-              className="-m-2.5 p-2.5 text-orange-200 lg:hidden"
+              className="-m-2.5 p-2.5 text-primary lg:hidden"
               onClick={() => setSidebarOpen(true)}
             >
-              <span className="sr-only text-black">Open sidebar</span>
+              <span className="sr-only">Open sidebar</span>
               <Bars3Icon className="h-6 w-6" aria-hidden="true" />
             </button>
-            <div className="flex-1 text-sm font-semibold leading-6 text-white">
+            <div className="flex-1 text-sm font-semibold leading-6 text-primary font-primary">
               Dashboard
             </div>
             <a href="#">
               <span className="sr-only">Your profile</span>
               <Image
-                className="h-8 w-8 rounded-full bg-orange-700"
+                className="h-8 w-8 rounded-full bg-accent"
                 src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                 alt=""
                 width={32}
@@ -337,11 +336,11 @@ export default function DashboardLayout({ children }: RootLayoutProps) {
           <main
             className={classNames(
               sidebarCollapsed ? "lg:pl-20" : "lg:pl-72",
+              "font-secondary"
             )}
           >
             {children}
           </main>
         </div>
-
   );
 }

@@ -49,31 +49,31 @@ export default function Snapshot() {
   }, []);
 
   return (
-    <div>
-      <dl className="mt-5 grid grid-cols-1 divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow md:grid-cols-3 md:divide-x md:divide-y-0">
+    <div className="w-full h-full font-secondary">
+      <dl className="grid grid-cols-1 divide-y divide-gray-200 overflow-hidden rounded-lg bg-tertiary border-2 border-accent shadow-accent-offset md:grid-cols-3 md:divide-x md:divide-y-0">
         {stats.map((item) => (
           <div key={item.name} className="px-4 py-5 sm:p-6">
-            <dt className="text-base font-normal text-gray-900">{item.name}</dt>
+            <dt className="text-base font-normal text-text-light font-primary">{item.name}</dt>
             <dd className="mt-1 flex items-baseline justify-between md:block lg:flex">
-              <div className="flex items-baseline text-2xl font-semibold text-indigo-600">
+              <div className="flex items-baseline text-2xl font-semibold text-accent font-primary">
                 {item.stat}
-                <span className="ml-2 text-sm font-medium text-gray-500">from {item.previousStat}</span>
+                <span className="ml-2 text-sm font-medium text-text-secondary font-secondary">from {item.previousStat}</span>
               </div>
 
               <div
                 className={classNames(
-                  item.changeType === 'increase' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800',
-                  'inline-flex items-baseline rounded-full px-2.5 py-0.5 text-sm font-medium md:mt-2 lg:mt-0'
+                  item.changeType === 'increase' ? 'bg-status-success bg-opacity-10 text-status-success' : 'bg-status-error bg-opacity-10 text-status-error',
+                  'inline-flex items-baseline rounded-full px-2.5 py-0.5 text-sm font-medium md:mt-2 lg:mt-0 font-secondary'
                 )}
               >
                 {item.changeType === 'increase' ? (
                   <ArrowUpIcon
-                    className="-ml-1 mr-0.5 h-5 w-5 flex-shrink-0 self-center text-green-500"
+                    className="-ml-1 mr-0.5 h-5 w-5 flex-shrink-0 self-center text-status-success"
                     aria-hidden="true"
                   />
                 ) : (
                   <ArrowDownIcon
-                    className="-ml-1 mr-0.5 h-5 w-5 flex-shrink-0 self-center text-red-500"
+                    className="-ml-1 mr-0.5 h-5 w-5 flex-shrink-0 self-center text-status-error"
                     aria-hidden="true"
                   />
                 )}

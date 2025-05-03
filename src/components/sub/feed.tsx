@@ -61,7 +61,7 @@ function classNames(
 
 export default function HomeFeed() {
   return (
-    <div className="flow-root bg-white rounded-lg p-8">
+    <div className="flow-rootrounded-lg p-8">
       <ul role="list" className="-mb-8">
         {timeline.map((event, eventIdx) => (
           <li key={event.id}>

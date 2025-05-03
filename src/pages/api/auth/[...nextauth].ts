@@ -3,40 +3,163 @@
 import NextAuth, { NextAuthOptions, Session } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { JWT, User } from 'next-auth';
+import { AdapterUser } from 'next-auth/adapters';
 
-export async function refreshAccessToken(token: JWT): Promise<JWT> {
-  try {
-    const backendURL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
-    const response = await fetch(`${backendURL}/api/v1/auth/token/refresh/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        refresh: token.refreshToken,
-      }),
-    });
+// Define types for token and user with correct structure
+interface ExtendedJWT extends JWT {
+  accessToken?: string;
+  refreshToken?: string;
+  accessTokenExpires?: number;
+  organization?: string;
+  organization_name?: string;
+  error?: string;
+}
 
-    const refreshedTokens = await response.json();
-    console.log(`Refreshed Tokens: ${JSON.stringify(refreshedTokens)}`);
+// Define a custom user interface without extending User
+interface CustomUser {
+  id: string;
+  email: string;
+  access_token?: string;
+  refresh_token?: string;
+  access_token_expires_in?: number;
+  organization?: string;
+  organization_name?: string;
+}
 
-    if (!response.ok) {
-      throw new Error('Failed to refresh token');
+interface ExtendedSession extends Session {
+  accessToken?: string;
+  refreshToken?: string;
+  error?: string;
+  user: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    organization?: string;
+    organization_name?: string;
+  };
+}
+
+export async function refreshAccessToken(token: ExtendedJWT): Promise<ExtendedJWT> {
+  let retryCount = 0;
+  const maxRetries = 3;
+  const retryDelay = 1000; // 1 second
+  
+  const attemptRefresh = async (): Promise<ExtendedJWT> => {
+    try {
+      console.log(`Refresh attempt ${retryCount + 1}/${maxRetries + 1}`);
+      console.log('Starting token refresh process...');
+      const backendURL = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
+      console.log(`Using backend URL for refresh: ${backendURL}`);
+      
+      if (!token.refreshToken) {
+        console.error('No refresh token available');
+        return {
+          ...token,
+          error: 'RefreshAccessTokenError',
+        };
+      }
+
+      // Add more detailed logging and error handling
+      console.log(`Attempting to refresh token at: ${backendURL}/api/v1/auth/token/refresh/`);
+      
+      // Create an AbortController to handle timeouts
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      try {
+        const response = await fetch(`${backendURL}/api/v1/auth/token/refresh/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            refresh: token.refreshToken,
+          }),
+          signal: controller.signal,
+        });
+        
+        // Clear the timeout since the request completed
+        clearTimeout(timeoutId);
+
+        // Log the status before parsing JSON
+        console.log(`Refresh response status: ${response.status}`);
+        
+        // Clone the response so we can log the body for debugging
+        const responseClone = response.clone();
+        let responseText;
+        try {
+          responseText = await responseClone.text();
+          console.log(`Refresh response body: ${responseText}`);
+        } catch (error) {
+          console.error('Error reading response body:', error);
+        }
+
+        // Parse the original response
+        let refreshedTokens;
+        try {
+          refreshedTokens = await response.json();
+          console.log('Refreshed tokens structure:', Object.keys(refreshedTokens));
+        } catch (error) {
+          console.error('Error parsing JSON from refresh response:', error);
+          throw new Error(`Failed to parse refresh response: ${responseText}`);
+        }
+
+        if (!response.ok) {
+          throw new Error(`Failed to refresh token: ${response.status} ${response.statusText}`);
+        }
+
+        // Ensure we have the required values
+        if (!refreshedTokens.access) {
+          console.error('Refresh response missing access token');
+          throw new Error('Access token missing from refresh response');
+        }
+
+        console.log('Token refresh successful, updating token');
+        
+        return {
+          ...token,
+          accessToken: refreshedTokens.access,
+          // Default to 1 hour if expires_in not provided
+          accessTokenExpires: Date.now() + (refreshedTokens.expires_in || 3600) * 1000,
+          refreshToken: refreshedTokens.refresh ?? token.refreshToken,
+          error: undefined, // Clear any previous errors
+        };
+      } catch (fetchError) {
+        // Make sure to clear the timeout if there's an error
+        clearTimeout(timeoutId);
+        throw fetchError;
+      }
+    } catch (error: any) {
+      // Check if this is a network error that we should retry
+      const isNetworkError = 
+        error.name === 'AbortError' || 
+        error.code === 'UND_ERR_HEADERS_TIMEOUT' ||
+        error.code === 'UND_ERR_CONNECT_TIMEOUT' ||
+        error.message?.includes('fetch failed') ||
+        error.message?.includes('network');
+      
+      if (isNetworkError && retryCount < maxRetries) {
+        console.log(`Network error during refresh, retrying (${retryCount + 1}/${maxRetries})...`);
+        console.error(`Error details:`, error);
+        
+        // Increment retry count and wait before retrying
+        retryCount++;
+        await new Promise(resolve => setTimeout(resolve, retryDelay * retryCount));
+        
+        // Try again
+        return attemptRefresh();
+      }
+      
+      // Either not a network error or we've exhausted retries
+      console.error('Error refreshing access token:', error);
+      return {
+        ...token,
+        error: 'RefreshAccessTokenError',
+      };
     }
-
-    return {
-      ...token,
-      accessToken: refreshedTokens.access,
-      accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
-      refreshToken: refreshedTokens.refresh ?? token.refreshToken,
-    };
-  } catch (error) {
-    console.error('Error refreshing access token:', error);
-    return {
-      ...token,
-      error: 'RefreshAccessTokenError',
-    };
-  }
+  };
+  
+  return attemptRefresh();
 }
 
 export const authOptions: NextAuthOptions = {
@@ -60,12 +183,7 @@ export const authOptions: NextAuthOptions = {
         console.log('AuthServiceResponse:', user);
 
         if (res.ok && user) {
-          // Return the user along with the organization information
-          return {
-            ...user,
-            organization: user.organization,
-            organization_name: user.organization_name,
-          } as User;
+          return user as User;
         } else {
           return null;
         }
@@ -73,50 +191,65 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   secret: process.env.SECRET_KEY,
-  jwt: {
-    signingKey: { kty: 'oct', k: process.env.SECRET_KEY },
-    encryption: false,
-  },
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user?: User }): Promise<JWT> {
-      if (user) {
-        token.accessToken = user.access_token;
-        token.refreshToken = user.refresh_token;
-        token.accessTokenExpires = Date.now() + user.access_token_expires_in * 1000;
-        token.email = user.email;
-        token.organization = user.organization;
-        token.organization_name = user.organization_name; // Add organization data to the token
+    // TypeScript will infer the return type
+    async jwt({ token, user }) {
+      // Cast user to CustomUser type if it exists
+      const customUser = user as CustomUser | undefined;
+
+      if (customUser) {
+        return {
+          ...token,
+          accessToken: customUser.access_token,
+          refreshToken: customUser.refresh_token,
+          accessTokenExpires: customUser.access_token_expires_in ? 
+            Date.now() + customUser.access_token_expires_in * 1000 : undefined,
+          email: customUser.email,
+          organization: customUser.organization,
+          organization_name: customUser.organization_name,
+        } as ExtendedJWT;
       }
 
-      // If token is not expired or will expire in more than 1 minute
-      if (token.accessTokenExpires && Date.now() < token.accessTokenExpires - 60000) {
-        return token;
+      // On subsequent calls, check if token needs refresh
+      const extendedToken = token as ExtendedJWT;
+      if (extendedToken.accessTokenExpires && 
+          Date.now() < extendedToken.accessTokenExpires - 60000) {
+        return extendedToken;
       }
 
       // Access token has expired, refresh it
       console.log('Access token expired, refreshing...');
-      return refreshAccessToken(token);
+      return refreshAccessToken(extendedToken);
     },
-    async session({ session, token }: { session: Session; token: JWT }): Promise<Session> {
-      console.log('Session callback called');
-      session.accessToken = token.accessToken;
-      session.refreshToken = token.refreshToken;
-      session.user.email = token.email!;
-      session.user.organization = token.organization;
-      session.user.organization_name = token.organization_name;
-      if (token.error === 'RefreshAccessTokenError') {
-        session.error = 'RefreshAccessTokenError';
+    
+    // TypeScript will infer the return type
+    async session({ session, token }) {
+      const extendedSession = session as ExtendedSession;
+      const extendedToken = token as ExtendedJWT;
+
+      // Copy token properties to session
+      extendedSession.accessToken = extendedToken.accessToken;
+      extendedSession.refreshToken = extendedToken.refreshToken;
+      
+      // Ensure user properties are preserved
+      extendedSession.user = {
+        ...extendedSession.user,
+        email: extendedToken.email || extendedSession.user.email,
+        organization: extendedToken.organization,
+        organization_name: extendedToken.organization_name,
+      };
+      
+      // Pass error to session if token refresh failed
+      if (extendedToken.error === 'RefreshAccessTokenError') {
+        extendedSession.error = 'RefreshAccessTokenError';
       }
-      console.log(session);
-      return session;
+      
+      return extendedSession;
     },
   },
   pages: {
     signIn: '/user/login',
     error: '/auth/error',
-  },
-  session: {
-    jwt: true,
   },
   debug: true,
 };

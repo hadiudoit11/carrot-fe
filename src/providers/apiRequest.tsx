@@ -123,3 +123,7 @@ export async function apiPatch(url: string, body: any): Promise<any> {
 export async function apiPut(url: string, body: any): Promise<any> {
   return apiRequest(url, 'PUT', body);
 }
+
+export async function apiDelete(url: string): Promise<any> {
+  return apiRequest(url, 'DELETE');
+}

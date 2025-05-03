@@ -1,0 +1,23 @@
+:root {
+  /* Primary brand colors */
+  --brand-primary: #3498db;
+  --brand-secondary: #2ecc71;
+  --brand-accent: #f39c12;
+  
+  /* Background colors */
+  --background-main: #f5f5f5;
+  --background-card: #ffffff;
+  --background-dark: #282828;
+  
+  /* Text colors */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-light: #ffffff;
+  
+  /* Status colors */
+  --status-todo: #3498db;
+  --status-in-progress: #f39c12;
+  --status-on-hold: #9b59b6;
+  --status-done: #2ecc71;
+  --status-cancelled: #e74c3c;
+}

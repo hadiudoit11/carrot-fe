@@ -1,4 +1,4 @@
-'use clients'
+'use client'
 import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/20/solid'
 
 const stats = [
@@ -7,49 +7,73 @@ const stats = [
   { name: 'Orders', stat: '2,457', previousStat: '2,862', change: '4.05%', changeType: 'decrease' },
 ]
 
-
 function classNames(...classes: (string | undefined | null | boolean)[]): string {
-    return classes.filter(Boolean).join(' ');
-  }
+  return classes.filter(Boolean).join(' ');
+}
+
+// Helper function to get different radial blur classes
+function getRadialBlurClass(index: number): string {
+  const positions = ['tl', 'tr', 'br', 'bl'];
+  const colorTypes = ['primary', 'accent', 'secondary']; 
+  
+  const positionIndex = index % positions.length;
+  const colorIndex = Math.floor(index / positions.length) % colorTypes.length;
+  
+  const position = positions[positionIndex];
+  const colorType = colorTypes[colorIndex];
+  
+  return colorType === 'primary' 
+    ? `radial-blur-${position}` 
+    : `radial-blur-${position} radial-blur-${colorType}-${position}`;
+}
 
 export default function Snapshot() {
   return (
-    <div>
-      <dl className="mt-5 grid grid-cols-1 divide-y divide-gray-200 overflow-hidden rounded-lg bg-white shadow md:grid-cols-3 md:divide-x md:divide-y-0">
-        {stats.map((item) => (
-          <div key={item.name} className="px-4 py-5 sm:p-6">
-            <dt className="text-base font-normal text-gray-900">{item.name}</dt>
-            <dd className="mt-1 flex items-baseline justify-between md:block lg:flex">
-              <div className="flex items-baseline text-2xl font-semibold text-indigo-600">
-                {item.stat}
-                <span className="ml-2 text-sm font-medium text-gray-500">from {item.previousStat}</span>
+    <div className="w-full h-full">
+      <h2 className="text-xl font-bold mb-4  text-text-primary">Dashboard Overview</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {stats.map((item, index) => (
+          <div 
+            key={item.name} 
+            className={`bg-bg-card rounded-lg border-2 border-border-accent p-4 shadow-accent-offset ${getRadialBlurClass(index)}`}
+          >
+            <div className="relative z-10">
+              <div className="flex justify-between items-start">
+                <dt className="text-xl font-extrabold text-text-secondary">{item.name}</dt>
+                <div
+                  className={classNames(
+                    item.changeType === 'increase' ? 'bg-status-success bg-opacity-10 text-status-success' : 'bg-status-error bg-opacity-10 text-status-error',
+                    'inline-flex items-baseline rounded-full px-2.5 py-0.5 text-sm font-medium'
+                  )}
+                >
+                  {item.changeType === 'increase' ? (
+                    <ArrowUpIcon
+                      className="-ml-1 mr-0.5 h-5 w-5 flex-shrink-0 self-center text-status-success"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <ArrowDownIcon
+                      className="-ml-1 mr-0.5 h-5 w-5 flex-shrink-0 self-center text-status-error"
+                      aria-hidden="true"
+                    />
+                  )}
+                  <span className="sr-only">{item.changeType === 'increase' ? 'Increased' : 'Decreased'} by </span>
+                  {item.change}
+                </div>
               </div>
-
-              <div
-                className={classNames(
-                  item.changeType === 'increase' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800',
-                  'inline-flex items-baseline rounded-full px-2.5 py-0.5 text-sm font-medium md:mt-2 lg:mt-0'
-                )}
-              >
-                {item.changeType === 'increase' ? (
-                  <ArrowUpIcon
-                    className="-ml-1 mr-0.5 h-5 w-5 flex-shrink-0 self-center text-green-500"
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <ArrowDownIcon
-                    className="-ml-1 mr-0.5 h-5 w-5 flex-shrink-0 self-center text-red-500"
-                    aria-hidden="true"
-                  />
-                )}
-
-                <span className="sr-only"> {item.changeType === 'increase' ? 'Increased' : 'Decreased'} by </span>
-                {item.change}
-              </div>
-            </dd>
+              
+              <dd className="mt-4">
+                <div className="flex items-baseline">
+                  <div className="text-2xl font-semibold text-text-secondary">
+                    {item.stat}
+                  </div>
+                  <span className="ml-2 text-sm font-medium text-text-secondary">from {item.previousStat}</span>
+                </div>
+              </dd>
+            </div>
           </div>
         ))}
-      </dl>
+      </div>
     </div>
   )
 }

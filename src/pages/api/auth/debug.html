@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NextAuth Debug Tools</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1, h2, h3 {
+      color: #0070f3;
+    }
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    button {
+      background: #0070f3;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    button:hover {
+      background: #005bbf;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 10px;
+      font-family: monospace;
+      padding: 10px;
+    }
+    .result {
+      background: #f0f0f0;
+      border-radius: 5px;
+      padding: 15px;
+      margin-top: 15px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .error {
+      background: #fff0f0;
+      color: #d00;
+    }
+    .success {
+      background: #f0fff0;
+      color: #0a0;
+    }
+  </style>
+</head>
+<body>
+  <h1>NextAuth Debug Tools</h1>
+  <p>Use these tools to diagnose problems with authentication and token refresh.</p>
+  
+  <div class="card">
+    <h2>1. Check Token Status</h2>
+    <p>Check the current state of your authentication token.</p>
+    <button onclick="checkToken()">Check Token Status</button>
+    <div id="token-result" class="result"></div>
+  </div>
+  
+  <div class="card">
+    <h2>2. Test Backend Connectivity</h2>
+    <p>Test basic connectivity to your backend server.</p>
+    <button onclick="testConnectivity()">Test Connectivity</button>
+    <div id="connectivity-result" class="result"></div>
+  </div>
+  
+  <div class="card">
+    <h2>3. Test Token Refresh</h2>
+    <p>Manually test token refresh functionality.</p>
+    <button onclick="refreshToken()">Test Token Refresh</button>
+    <div id="refresh-result" class="result"></div>
+  </div>
+  
+  <div class="card">
+    <h2>4. Direct Token Refresh Test</h2>
+    <p>Directly test the token refresh endpoint with your refresh token.</p>
+    <textarea id="refresh-token" placeholder="Paste your refresh token here..."></textarea>
+    <button onclick="directRefreshTest()">Test Direct Refresh</button>
+    <div id="direct-refresh-result" class="result"></div>
+  </div>
+  
+  <div class="card">
+    <h2>5. Environment Information</h2>
+    <button onclick="checkEnvironment()">Check Environment</button>
+    <div id="environment-result" class="result"></div>
+  </div>
+  
+  <script>
+    // Helper to format JSON responses
+    function formatResponse(data) {
+      return JSON.stringify(data, null, 2);
+    }
+    
+    // Set result with appropriate styling
+    function setResult(elementId, data, isError = false) {
+      const element = document.getElementById(elementId);
+      element.textContent = formatResponse(data);
+      
+      // Clear previous classes
+      element.classList.remove('error', 'success');
+      
+      // Add appropriate class
+      if (isError) {
+        element.classList.add('error');
+      } else {
+        element.classList.add('success');
+      }
+    }
+    
+    // Check token status
+    async function checkToken() {
+      try {
+        const result = document.getElementById('token-result');
+        result.textContent = "Loading...";
+        
+        const response = await fetch('/api/auth/debug-token');
+        const data = await response.json();
+        
+        setResult('token-result', data, data.error);
+      } catch (error) {
+        setResult('token-result', { error: error.message }, true);
+      }
+    }
+    
+    // Test backend connectivity
+    async function testConnectivity() {
+      try {
+        const result = document.getElementById('connectivity-result');
+        result.textContent = "Loading...";
+        
+        const response = await fetch('/api/auth/debug-connection');
+        const data = await response.json();
+        
+        setResult('connectivity-result', data, !data.connectionSuccessful);
+      } catch (error) {
+        setResult('connectivity-result', { error: error.message }, true);
+      }
+    }
+    
+    // Test token refresh
+    async function refreshToken() {
+      try {
+        const result = document.getElementById('refresh-result');
+        result.textContent = "Loading...";
+        
+        const response = await fetch('/api/auth/debug-token?debug-refresh=true');
+        const data = await response.json();
+        
+        setResult('refresh-result', data, data.error || (data.newToken && data.newToken.error));
+      } catch (error) {
+        setResult('refresh-result', { error: error.message }, true);
+      }
+    }
+    
+    // Direct refresh token test
+    async function directRefreshTest() {
+      try {
+        const result = document.getElementById('direct-refresh-result');
+        result.textContent = "Loading...";
+        
+        const refreshToken = document.getElementById('refresh-token').value.trim();
+        
+        if (!refreshToken) {
+          setResult('direct-refresh-result', { error: 'Please enter a refresh token' }, true);
+          return;
+        }
+        
+        const response = await fetch('/api/auth/debug-refresh', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ refreshToken }),
+        });
+        
+        const data = await response.json();
+        setResult('direct-refresh-result', data, !data.connectionSuccessful || !data.requestSuccessful);
+      } catch (error) {
+        setResult('direct-refresh-result', { error: error.message }, true);
+      }
+    }
+    
+    // Check environment
+    async function checkEnvironment() {
+      try {
+        const env = {
+          userAgent: navigator.userAgent,
+          language: navigator.language,
+          cookiesEnabled: navigator.cookieEnabled,
+          localStorage: typeof localStorage !== 'undefined',
+          sessionStorage: typeof sessionStorage !== 'undefined',
+          online: navigator.onLine,
+          protocol: window.location.protocol,
+          host: window.location.host,
+        };
+        
+        setResult('environment-result', env);
+      } catch (error) {
+        setResult('environment-result', { error: error.message }, true);
+      }
+    }
+  </script>
+</body>
+</html> 

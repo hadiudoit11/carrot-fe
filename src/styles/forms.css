@@ -1,0 +1,220 @@
+/* 
+ * Form Styling & CSS Variables
+ */
+
+:root {
+  /* Form Background Colors */
+  --form-bg-main: #ffffff;
+  --form-bg-secondary: #f8f9fa;
+  --form-bg-hover: #f0f2f5;
+  
+  /* Form Text Colors */
+  --form-text-primary: #323232;
+  --form-text-secondary: #666666;
+  --form-text-placeholder: #a0a0a0;
+  --form-text-heading: #1a1a1a;
+  
+  /* Form Border Colors */
+  --form-border-light: #e1e4e8;
+  --form-border-focus: #94bc20;
+  --form-border-error: #e34c4c;
+  
+  /* Form Button Colors */
+  --form-button-primary-bg: #94bc20;
+  --form-button-primary-text: #ffffff;
+  --form-button-primary-hover: #7a9d18;
+  --form-button-primary-active: #648214;
+  
+  --form-button-secondary-bg: #f8f9fa;
+  --form-button-secondary-text: #323232;
+  --form-button-secondary-hover: #e1e4e8;
+  --form-button-secondary-active: #c9cfd6;
+  
+  --form-button-danger-bg: #e34c4c;
+  --form-button-danger-text: #ffffff;
+  --form-button-danger-hover: #c83333;
+  --form-button-danger-active: #a82b2b;
+  
+  /* Form State Colors */
+  --form-state-success: #2ecc71;
+  --form-state-warning: #f39c12;
+  --form-state-error: #e34c4c;
+  --form-state-info: #3498db;
+  
+  /* Form Overlay */
+  --form-overlay: rgba(0, 0, 0, 0.5);
+}
+
+/* Form Base Styles */
+.form-container {
+  background: var(--form-bg-main);
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  color: var(--form-text-primary);
+}
+
+.form-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--form-border-light);
+}
+
+.form-title {
+  color: var(--form-text-heading);
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--form-text-secondary);
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  background: var(--form-bg-secondary);
+  border: 1px solid var(--form-border-light);
+  border-radius: 0.375rem;
+  font-family: inherit;
+  color: var(--form-text-primary);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--form-border-focus);
+  box-shadow: 0 0 0 3px rgba(148, 188, 32, 0.15);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--form-text-placeholder);
+}
+
+.form-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 6rem;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.form-button-primary {
+  background: var(--form-button-primary-bg);
+  color: var(--form-button-primary-text);
+  border: 1px solid transparent;
+}
+
+.form-button-primary:hover {
+  background: var(--form-button-primary-hover);
+}
+
+.form-button-primary:active {
+  background: var(--form-button-primary-active);
+}
+
+.form-button-secondary {
+  background: var(--form-button-secondary-bg);
+  color: var(--form-button-secondary-text);
+  border: 1px solid var(--form-border-light);
+}
+
+.form-button-secondary:hover {
+  background: var(--form-button-secondary-hover);
+}
+
+.form-button-secondary:active {
+  background: var(--form-button-secondary-active);
+}
+
+.form-button-danger {
+  background: var(--form-button-danger-bg);
+  color: var(--form-button-danger-text);
+  border: 1px solid transparent;
+}
+
+.form-button-danger:hover {
+  background: var(--form-button-danger-hover);
+}
+
+.form-button-danger:active {
+  background: var(--form-button-danger-active);
+}
+
+.form-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.form-error {
+  margin-top: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--form-state-error);
+}
+
+.form-hint {
+  margin-top: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--form-text-secondary);
+}
+
+.form-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--form-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal-form-container {
+  width: 100%;
+  max-width: 32rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 0.75rem;
+  background: var(--form-bg-main);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Custom checkbox and radio styles */
+.form-checkbox,
+.form-radio {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+}
+
+.form-checkbox input,
+.form-radio input {
+  margin-right: 0.5rem;
+  cursor: pointer;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .form-container {
+    padding: 1rem;
+  }
+  
+  .modal-form-container {
+    max-width: 90%;
+  }
+} 
