@@ -200,44 +200,48 @@ export default function ProjectList() {
           {Array.isArray(projects) && projects.length > 0 ? (
             projects.map((project, index) => (
               <Link href={`/projects/${project.id}`} key={project.id} className="block">
-                <div className={`bg-bg-card hover:bg-opacity-90 border-2 border-accent rounded-lg p-5 h-48 flex flex-col transition-all hover:shadow-accent-offset ${getRadialBlurClass(index)}`}>
+                <div className={`bg-bg-card hover:bg-opacity-90 border-2 border-accent rounded-lg p-4 h-44 flex flex-col transition-all hover:shadow-accent-offset ${getRadialBlurClass(index)}`}>
                   <div className="relative z-10 h-full flex flex-col">
-                    <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-start justify-between mb-1.5">
                       <h3 className="font-bold text-lg truncate text-text-secondary font-primary">
                         {project.title}
                       </h3>
                       {project.statusName && (
-                        <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(project.statusName)}`}>
+                        <span className={`text-xs px-2 py-1 rounded-full ml-2 flex-shrink-0 ${getStatusColor(project.statusName)}`}>
                           {project.statusName}
                         </span>
                       )}
                     </div>
                     
-                    <div className="text-text-secondary text-sm mb-2 line-clamp-2 flex-grow">
+                    <div className="text-text-secondary text-sm line-clamp-2 mb-auto">
                       {project.description || "No description provided."}
                     </div>
                     
                     {/* Project status visualization */}
-                    <div className="mt-auto">
+                    <div className="mt-2">
+                      <div className="text-xs text-text-secondary mb-1">Project Progress</div>
                       {/* Progress bar */}
-                      <div className="w-full bg-gray-200 rounded-full h-2.5 mb-1.5">
+                      <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
                         <div 
-                          className="bg-accent h-2.5 rounded-full" 
+                          className="bg-accent h-2 rounded-full" 
                           style={{ width: `${calculateProgress(project.statusCounts)}%` }}
-                        ></div>
+                        />
                       </div>
                       
-                      <div className="flex flex-wrap justify-between items-center text-xs mt-2">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-text-secondary mr-2">Due:</span>
-                          <span className="text-text-light">{formatDate(project.dueDate)}</span>
-                        </div>
-                        
-                        <div className="flex items-center text-text-secondary">
-                          <ClockIcon className="h-3.5 w-3.5 mr-1" />
-                          <span>{formatDate(project.createdAt)}</span>
+                      <div className="border-t border-accent/20 pt-2 mt-1">
+                        <div className="flex justify-between items-center text-xs">
+                          <div className="flex items-center">
+                            <span className="text-text-secondary">Due: </span>
+                            <span className="text-text-light ml-1">{formatDate(project.dueDate)}</span>
+                          </div>
+                          
+                          <div className="flex items-center text-text-secondary">
+                            <ClockIcon className="h-3.5 w-3.5 mr-1" />
+                            <span>{formatDate(project.createdAt)}</span>
+                          </div>
                         </div>
                       </div>
+                      
                     </div>
                   </div>
                 </div>

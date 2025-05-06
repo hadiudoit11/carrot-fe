@@ -1,335 +1,365 @@
+"use client";
 
-import { PhotoIcon, UserCircleIcon } from '@heroicons/react/24/solid'
+import { useState, useEffect, useRef, type RefObject } from "react";
+import { cn } from "@/lib/utils";
+import { X, Check, UserIcon, Search, Loader2 } from "lucide-react";
+import { useClickOutside } from "@/hooks/use-click-outside";
+import { apiGet } from "@/providers/apiRequest";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-export default function AddUserForm() {
-  return (
-    <form className="h-full overflow-y-auto">
-      <div className="space-y-12">
-        <div className="border-b border-gray-900/10 pb-12">
-          <h2 className="text-base font-semibold leading-7 text-gray-900">Profile</h2>
-          <p className="mt-1 text-sm leading-6 text-gray-600">
-            This information will be displayed publicly so be careful what you share.
-          </p>
+interface User {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    avatar?: string;
+}
 
-          <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-            <div className="sm:col-span-4">
-              <label htmlFor="username" className="block text-sm font-medium leading-6 text-gray-900">
-                Username
-              </label>
-              <div className="mt-2">
-                <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md">
-                  <span className="flex select-none items-center pl-3 text-gray-500 sm:text-sm">workcation.com/</span>
-                  <input
-                    type="text"
-                    name="username"
-                    id="username"
-                    autoComplete="username"
-                    className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
-                    placeholder="janesmith"
-                  />
-                </div>
-              </div>
-            </div>
+interface UserSelectorProps {
+    onChange?: (users: User[]) => void;
+    defaultUsers?: User[];
+    maxUsers?: number;
+    label?: string;
+    placeholder?: string;
+    error?: string;
+    siteId?: string;
+    siteGroupId?: string;
+    disabled?: boolean;
+    className?: string;
+    singleSelect?: boolean;
+}
 
-            <div className="col-span-full">
-              <label htmlFor="about" className="block text-sm font-medium leading-6 text-gray-900">
-                About
-              </label>
-              <div className="mt-2">
-                <textarea
-                  id="about"
-                  name="about"
-                  rows={3}
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  defaultValue={''}
-                />
-              </div>
-              <p className="mt-3 text-sm leading-6 text-gray-600">Write a few sentences about yourself.</p>
-            </div>
+const userStyles = {
+    base: "inline-flex items-center gap-1.5 px-2 py-0.5 text-sm rounded-md transition-colors duration-150",
+    selected: "bg-blue-50 text-blue-700 border border-blue-200 hover:border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700/30 dark:hover:border-blue-600/50",
+    suggestion: "bg-zinc-50 text-zinc-700 border border-zinc-300 hover:border-zinc-400 dark:bg-zinc-800/50 dark:text-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600",
+    highlighted: "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700/30",
+};
 
-            <div className="col-span-full">
-              <label htmlFor="photo" className="block text-sm font-medium leading-6 text-gray-900">
-                Photo
-              </label>
-              <div className="mt-2 flex items-center gap-x-3">
-                <UserCircleIcon className="h-12 w-12 text-gray-300" aria-hidden="true" />
-                <button
-                  type="button"
-                  className="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                >
-                  Change
-                </button>
-              </div>
-            </div>
+export default function UserSelector({
+    onChange,
+    defaultUsers = [],
+    maxUsers = 10,
+    label = "Users",
+    placeholder = "Search users...",
+    error,
+    siteId,
+    siteGroupId,
+    disabled = false,
+    className,
+    singleSelect = false,
+}: UserSelectorProps) {
+    const [selectedUsers, setSelectedUsers] = useState<User[]>(defaultUsers);
+    const [allUsers, setAllUsers] = useState<User[]>([]);
+    const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+    const [input, setInput] = useState("");
+    const [isOpen, setIsOpen] = useState(false);
+    const [selectedIndex, setSelectedIndex] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
-            <div className="col-span-full">
-              <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">
-                Cover photo
-              </label>
-              <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10">
-                <div className="text-center">
-                  <PhotoIcon className="mx-auto h-12 w-12 text-gray-300" aria-hidden="true" />
-                  <div className="mt-4 flex text-sm leading-6 text-gray-600">
-                    <label
-                      htmlFor="file-upload"
-                      className="relative cursor-pointer rounded-md bg-white font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500"
-                    >
-                      <span>Upload a file</span>
-                      <input id="file-upload" name="file-upload" type="file" className="sr-only" />
-                    </label>
-                    <p className="pl-1">or drag and drop</p>
-                  </div>
-                  <p className="text-xs leading-5 text-gray-600">PNG, JPG, GIF up to 10MB</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+    // Fetch users from the API
+    useEffect(() => {
+        const fetchUsers = async () => {
+            setIsLoading(true);
+            try {
+                const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
+                let endpoint = `${backendURL}/api/v1/auth/organization/users/`;
+                
+                // Add query parameters if provided
+                const params = new URLSearchParams();
+                if (siteId) params.append('site_id', siteId);
+                if (siteGroupId) params.append('site_group_id', siteGroupId);
+                
+                if (params.toString()) {
+                    endpoint += `?${params.toString()}`;
+                }
+                
+                const response = await apiGet(endpoint);
+                
+                if (Array.isArray(response)) {
+                    setAllUsers(response);
+                }
+            } catch (err) {
+                console.error('Error fetching users:', err);
+            } finally {
+                setIsLoading(false);
+                setIsInitialLoad(false);
+            }
+        };
 
-        <div className="border-b border-gray-900/10 pb-12">
-          <h2 className="text-base font-semibold leading-7 text-gray-900">Personal Information</h2>
-          <p className="mt-1 text-sm leading-6 text-gray-600">Use a permanent address where you can receive mail.</p>
+        fetchUsers();
+    }, [siteId, siteGroupId]);
 
-          <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-            <div className="sm:col-span-3">
-              <label htmlFor="first-name" className="block text-sm font-medium leading-6 text-gray-900">
-                First name
-              </label>
-              <div className="mt-2">
-                <input
-                  type="text"
-                  name="first-name"
-                  id="first-name"
-                  autoComplete="given-name"
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </div>
-            </div>
+    // Filter users based on input
+    useEffect(() => {
+        if (searchTimeout.current) {
+            clearTimeout(searchTimeout.current);
+        }
 
-            <div className="sm:col-span-3">
-              <label htmlFor="last-name" className="block text-sm font-medium leading-6 text-gray-900">
-                Last name
-              </label>
-              <div className="mt-2">
-                <input
-                  type="text"
-                  name="last-name"
-                  id="last-name"
-                  autoComplete="family-name"
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </div>
-            </div>
+        if (input.length < 1) {
+            // When input is empty, show all users not already selected
+            setFilteredUsers(
+                allUsers.filter(
+                    user => !selectedUsers.some(selected => selected.id === user.id)
+                ).slice(0, 5)
+            );
+            return;
+        }
 
-            <div className="sm:col-span-4">
-              <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
-                Email address
-              </label>
-              <div className="mt-2">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </div>
-            </div>
+        searchTimeout.current = setTimeout(() => {
+            const lowercaseInput = input.toLowerCase();
+            const filtered = allUsers.filter(
+                user => 
+                    (user.first_name.toLowerCase().includes(lowercaseInput) ||
+                    user.last_name.toLowerCase().includes(lowercaseInput) ||
+                    user.email.toLowerCase().includes(lowercaseInput)) &&
+                    !selectedUsers.some(selected => selected.id === user.id)
+            ).slice(0, 5);
+            
+            setFilteredUsers(filtered);
+        }, 300);
 
-            <div className="sm:col-span-3">
-              <label htmlFor="country" className="block text-sm font-medium leading-6 text-gray-900">
-                Country
-              </label>
-              <div className="mt-2">
-                <select
-                  id="country"
-                  name="country"
-                  autoComplete="country-name"
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
-                >
-                  <option>United States</option>
-                  <option>Canada</option>
-                  <option>Mexico</option>
-                </select>
-              </div>
-            </div>
+        return () => {
+            if (searchTimeout.current) {
+                clearTimeout(searchTimeout.current);
+            }
+        };
+    }, [input, allUsers, selectedUsers]);
 
-            <div className="col-span-full">
-              <label htmlFor="street-address" className="block text-sm font-medium leading-6 text-gray-900">
-                Street address
-              </label>
-              <div className="mt-2">
-                <input
-                  type="text"
-                  name="street-address"
-                  id="street-address"
-                  autoComplete="street-address"
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </div>
-            </div>
+    // Handle adding a user
+    const addUser = (user: User) => {
+        if (singleSelect) {
+            // If single select, replace the current selection
+            setSelectedUsers([user]);
+        } else {
+            // Otherwise add to the current selection
+            if (selectedUsers.length < maxUsers) {
+                setSelectedUsers(prev => [...prev, user]);
+            }
+        }
+        
+        // Notify parent component
+        onChange?.(singleSelect ? [user] : [...selectedUsers, user]);
+    };
 
-            <div className="sm:col-span-2 sm:col-start-1">
-              <label htmlFor="city" className="block text-sm font-medium leading-6 text-gray-900">
-                City
-              </label>
-              <div className="mt-2">
-                <input
-                  type="text"
-                  name="city"
-                  id="city"
-                  autoComplete="address-level2"
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </div>
-            </div>
+    // Handle removing a user
+    const removeUser = (userId: string) => {
+        setSelectedUsers(prev => prev.filter(user => user.id !== userId));
+        
+        // Notify parent component
+        const updatedUsers = selectedUsers.filter(user => user.id !== userId);
+        onChange?.(updatedUsers);
+    };
 
-            <div className="sm:col-span-2">
-              <label htmlFor="region" className="block text-sm font-medium leading-6 text-gray-900">
-                State / Province
-              </label>
-              <div className="mt-2">
-                <input
-                  type="text"
-                  name="region"
-                  id="region"
-                  autoComplete="address-level1"
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </div>
-            </div>
+    // Handle keyboard navigation
+    function handleKeyDown(e: React.KeyboardEvent) {
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+            setSelectedIndex(prev => 
+                prev < filteredUsers.length - 1 ? prev + 1 : prev
+            );
+        } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            setSelectedIndex(prev => (prev > 0 ? prev - 1 : 0));
+        } else if (e.key === "Enter" && isOpen && filteredUsers.length > 0) {
+            e.preventDefault();
+            const selectedUser = filteredUsers[selectedIndex];
+            if (selectedUser) {
+                addUser(selectedUser);
+                setInput("");
+            }
+        } else if (e.key === "Escape") {
+            setIsOpen(false);
+        } else if (e.key === "Backspace" && input === "" && selectedUsers.length > 0 && !singleSelect) {
+            // Remove the last user when backspace is pressed on empty input
+            const lastUser = selectedUsers[selectedUsers.length - 1];
+            removeUser(lastUser.id);
+        }
+    }
 
-            <div className="sm:col-span-2">
-              <label htmlFor="postal-code" className="block text-sm font-medium leading-6 text-gray-900">
-                ZIP / Postal code
-              </label>
-              <div className="mt-2">
-                <input
-                  type="text"
-                  name="postal-code"
-                  id="postal-code"
-                  autoComplete="postal-code"
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+    // Handle click outside to close dropdown
+    useClickOutside(containerRef as RefObject<HTMLElement>, () =>
+        setIsOpen(false)
+    );
 
-        <div className="border-b border-gray-900/10 pb-12">
-          <h2 className="text-base font-semibold leading-7 text-gray-900">Notifications</h2>
-          <p className="mt-1 text-sm leading-6 text-gray-600">
-            We'll always let you know about important changes, but you pick what else you want to hear about.
-          </p>
+    // Generate initials for avatar fallback
+    const getInitials = (firstName: string, lastName: string) => {
+        return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    };
 
-          <div className="mt-10 space-y-10">
-            <fieldset>
-              <legend className="text-sm font-semibold leading-6 text-gray-900">By Email</legend>
-              <div className="mt-6 space-y-6">
-                <div className="relative flex gap-x-3">
-                  <div className="flex h-6 items-center">
-                    <input
-                      id="comments"
-                      name="comments"
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                    />
-                  </div>
-                  <div className="text-sm leading-6">
-                    <label htmlFor="comments" className="font-medium text-gray-900">
-                      Comments
-                    </label>
-                    <p className="text-gray-500">Get notified when someones posts a comment on a posting.</p>
-                  </div>
-                </div>
-                <div className="relative flex gap-x-3">
-                  <div className="flex h-6 items-center">
-                    <input
-                      id="candidates"
-                      name="candidates"
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                    />
-                  </div>
-                  <div className="text-sm leading-6">
-                    <label htmlFor="candidates" className="font-medium text-gray-900">
-                      Candidates
-                    </label>
-                    <p className="text-gray-500">Get notified when a candidate applies for a job.</p>
-                  </div>
-                </div>
-                <div className="relative flex gap-x-3">
-                  <div className="flex h-6 items-center">
-                    <input
-                      id="offers"
-                      name="offers"
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                    />
-                  </div>
-                  <div className="text-sm leading-6">
-                    <label htmlFor="offers" className="font-medium text-gray-900">
-                      Offers
-                    </label>
-                    <p className="text-gray-500">Get notified when a candidate accepts or rejects an offer.</p>
-                  </div>
-                </div>
-              </div>
-            </fieldset>
-            <fieldset>
-              <legend className="text-sm font-semibold leading-6 text-gray-900">Push Notifications</legend>
-              <p className="mt-1 text-sm leading-6 text-gray-600">These are delivered via SMS to your mobile phone.</p>
-              <div className="mt-6 space-y-6">
-                <div className="flex items-center gap-x-3">
-                  <input
-                    id="push-everything"
-                    name="push-notifications"
-                    type="radio"
-                    className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                  />
-                  <label htmlFor="push-everything" className="block text-sm font-medium leading-6 text-gray-900">
-                    Everything
-                  </label>
-                </div>
-                <div className="flex items-center gap-x-3">
-                  <input
-                    id="push-email"
-                    name="push-notifications"
-                    type="radio"
-                    className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                  />
-                  <label htmlFor="push-email" className="block text-sm font-medium leading-6 text-gray-900">
-                    Same as email
-                  </label>
-                </div>
-                <div className="flex items-center gap-x-3">
-                  <input
-                    id="push-nothing"
-                    name="push-notifications"
-                    type="radio"
-                    className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                  />
-                  <label htmlFor="push-nothing" className="block text-sm font-medium leading-6 text-gray-900">
-                    No push notifications
-                  </label>
-                </div>
-              </div>
-            </fieldset>
-          </div>
-        </div>
-      </div>
+    // Format user display name
+    const getUserDisplayName = (user: User) => {
+        return `${user.first_name} ${user.last_name}`;
+    };
 
-      <div className="mt-6 flex items-center justify-end gap-x-6">
-        <button type="button" className="text-sm font-semibold leading-6 text-gray-900">
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+    return (
+        <div
+            className={cn("w-full space-y-2", className)}
+            ref={containerRef}
         >
-          Save
-        </button>
-      </div>
-    </form>
-  )
+            {label && (
+                <label
+                    className="text-sm font-medium text-zinc-800 dark:text-zinc-200"
+                    htmlFor={label}
+                >
+                    {label}
+                </label>
+            )}
+
+            <div
+                className={cn(
+                    "min-h-[3rem] sm:min-h-[2.5rem] p-2 sm:p-1.5",
+                    "rounded-lg border",
+                    "border-zinc-300 dark:border-zinc-700",
+                    "bg-white dark:bg-zinc-900",
+                    "focus-within:ring-2 focus-within:ring-indigo-500/30 dark:focus-within:ring-indigo-400/30",
+                    "flex items-center flex-row flex-wrap gap-2 sm:gap-1.5 relative",
+                    disabled && "opacity-50 cursor-not-allowed"
+                )}
+            >
+                {selectedUsers.map((user) => (
+                    <span
+                        key={user.id}
+                        className={cn(
+                            userStyles.base,
+                            userStyles.selected,
+                            "text-base sm:text-sm py-1 sm:py-0.5"
+                        )}
+                    >
+                        <Avatar className="h-5 w-5 mr-1">
+                            <AvatarImage src={user.avatar} alt={getUserDisplayName(user)} />
+                            <AvatarFallback className="text-xs">
+                                {getInitials(user.first_name, user.last_name)}
+                            </AvatarFallback>
+                        </Avatar>
+                        {getUserDisplayName(user)}
+                        {!disabled && (
+                            <button
+                                type="button"
+                                onClick={() => removeUser(user.id)}
+                                className={cn(
+                                    "text-current/60 hover:text-current transition-colors",
+                                    "p-1 sm:p-0"
+                                )}
+                            >
+                                <X className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
+                            </button>
+                        )}
+                    </span>
+                ))}
+
+                {(!singleSelect || selectedUsers.length === 0) && !disabled && (
+                    <div className="flex-1 flex items-center min-w-[140px] sm:min-w-[120px]">
+                        <Search className="w-4 h-4 text-zinc-400 mr-2" />
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            value={input}
+                            onChange={(e) => {
+                                setInput(e.target.value);
+                                setIsOpen(true);
+                                setSelectedIndex(0);
+                            }}
+                            onFocus={() => setIsOpen(true)}
+                            onKeyDown={handleKeyDown}
+                            placeholder={selectedUsers.length === 0 ? placeholder : ""}
+                            disabled={disabled || (singleSelect && selectedUsers.length > 0)}
+                            className={cn(
+                                "flex-1 bg-transparent",
+                                "h-8 sm:h-7",
+                                "text-base sm:text-sm",
+                                "text-zinc-900 dark:text-zinc-100",
+                                "placeholder:text-zinc-500 dark:placeholder:text-zinc-400",
+                                "focus:outline-none"
+                            )}
+                        />
+                    </div>
+                )}
+
+                {isOpen && !disabled && (
+                    <div
+                        className={cn(
+                            "absolute left-0 right-0 top-full mt-1 z-50",
+                            "max-h-[60vh] sm:max-h-[300px] overflow-y-auto",
+                            "bg-white dark:bg-zinc-900",
+                            "border border-zinc-300 dark:border-zinc-700",
+                            "rounded-lg shadow-lg dark:shadow-zinc-950/50",
+                            "overflow-hidden"
+                        )}
+                    >
+                        <div className="px-2 py-1.5 border-b border-zinc-200 dark:border-zinc-800">
+                            <span className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
+                                {isLoading ? "Loading users..." : "Select a user"}
+                            </span>
+                        </div>
+                        
+                        {isLoading ? (
+                            <div className="p-4 flex justify-center">
+                                <Loader2 className="w-5 h-5 animate-spin text-zinc-500" />
+                            </div>
+                        ) : filteredUsers.length > 0 ? (
+                            <div className="p-1">
+                                {filteredUsers.map((user, index) => (
+                                    <div 
+                                        key={user.id}
+                                        onClick={() => {
+                                            addUser(user);
+                                            setInput("");
+                                            setIsOpen(false);
+                                        }}
+                                        className={cn(
+                                            "flex items-center gap-2 p-2 rounded-md cursor-pointer",
+                                            selectedIndex === index 
+                                                ? userStyles.highlighted
+                                                : "hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                        )}
+                                    >
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarImage src={user.avatar} alt={getUserDisplayName(user)} />
+                                            <AvatarFallback>
+                                                {getInitials(user.first_name, user.last_name)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium truncate">
+                                                {getUserDisplayName(user)}
+                                            </p>
+                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                                                {user.email}
+                                            </p>
+                                        </div>
+                                        {selectedIndex === index && (
+                                            <Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : isInitialLoad ? (
+                            <div className="p-4 text-center text-sm text-zinc-500">
+                                Loading users...
+                            </div>
+                        ) : input.length > 0 ? (
+                            <div className="p-4 text-center text-sm text-zinc-500">
+                                No users found matching "{input}"
+                            </div>
+                        ) : (
+                            <div className="p-4 text-center text-sm text-zinc-500">
+                                No users available
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            {error && (
+                <p className="text-sm text-red-600 dark:text-red-400">
+                    {error}
+                </p>
+            )}
+        </div>
+    );
 }

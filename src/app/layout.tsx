@@ -4,6 +4,8 @@ import { ReactNode } from 'react';
 import { NextAuthProvider } from '@/providers/NextAuthProvider';
 import './globals.css';
 import { Open_Sans } from 'next/font/google';
+import { ThemeProvider } from '@/components/ui/theme-provider';
+import { availableThemes } from '@/config/themes';
 
 // Initialize Open Sans font
 const openSans = Open_Sans({ 
@@ -19,11 +21,19 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={`h-full ${openSans.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`h-full ${openSans.variable}`}>
       <body className="h-full bg-bg-main text-text-primary font-primary">
-        <NextAuthProvider>
-          {children}
-        </NextAuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+          themes={availableThemes}
+        >
+          <NextAuthProvider>
+            {children}
+          </NextAuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

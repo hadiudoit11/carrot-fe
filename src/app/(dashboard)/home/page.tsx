@@ -1,33 +1,27 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import HomeArticles from "@/components/main/dashboard-home";
-import ArticleSnapshot from "@/components/sub/articles-snapshot";
-import HomeFeed from "@/components/sub/feed";
-import ProjectSummary from "@/components/sub/project-summary";
-import Snapshot from "@/components/sub/snapshot";
-import ColorExample from "@/components/ColorExample";
-import FontExample from "@/components/FontExample";
+import { SectionCards } from '@/components/sub/analytics/section-cards';
+import { ChartAreaInteractive } from '@/components/sub/analytics/chart-area-interactive';
+import { DataTable } from '@/components/sub/analytics/data-table';
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-export default function Home() {
+// Sample data for the DataTable
+const data = [
+  // Your data here
+];
+
+export default function HomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (status === 'loading') return; // Do nothing while loading
-    
+    if (status === 'loading') return;
     setIsLoading(false);
     
-    // Handle all navigation in the effect
-    if (!session) {
-      router.push('/user/login');
-      return;
-    }
-    
-    if (session?.error === 'RefreshAccessTokenError') {
+    if (!session || session?.error === 'RefreshAccessTokenError') {
       router.push('/user/login');
       return;
     }
@@ -36,54 +30,19 @@ export default function Home() {
       router.push('/onboarding');
       return;
     }
-    
-    console.log(`home/page.tsx: ${session?.user.organization}`);
   }, [session, status, router]);
 
-  // Show loading state while session is loading or while our effect is running
   if (status === 'loading' || isLoading) {
     return <div className="text-text-primary">Loading...</div>;
   }
 
-  // The rest of the render logic only runs if we're authenticated
-  // and not navigating away
   return (
-    <div className="bg-main p-10 text-text-primary">
-      <div className="w-full rounded-lg overflow-hidden p-2">
-        <div className="relative z-10">
-          <Snapshot />
-        </div>
+    <div className="flex flex-col md:gap-6 md:py-6">
+      <SectionCards />
+      <div className="px-4 lg:px-6">
+        <ChartAreaInteractive />
       </div>
-      
-      <div className="grid grid-cols-2 mt-8 gap-10">
-        {/* HomeFeed with bottom-right primary blur effect */}
-        <div className="w-full rounded-lg border-2 bg-bg-card border-border-accent overflow-hidden shadow-accent-offset radial-blur-br">
-          <div className="relative z-10">
-            <HomeFeed />
-          </div>
-        </div>
-        
-        {/* ColorExample with top-right secondary blur effect */}
-        <div className="w-full bg-bg-card rounded-lg border-2 border-border-accent overflow-hidden shadow-accent-offset radial-blur-tr radial-blur-secondary-tr">
-          <div className="relative z-10">
-            <ColorExample />
-          </div>
-        </div>
-      </div>
-
-      {/* Font Example with bottom-left accent blur effect */}
-      <div className="w-full mt-8 rounded-lg border-2 bg-bg-card border-border-accent overflow-hidden shadow-accent-offset radial-blur-bl radial-blur-accent-bl">
-        <div className="relative z-10">
-          <FontExample />
-        </div>
-      </div>
-      
-      {/* ProjectSummary with bottom-left accent blur effect */}
-      <div className="w-full mt-8 rounded-lg border-2 bg-bg-card border-border-accent overflow-hidden shadow-accent-offset radial-blur-tl radial-blur-accent-tl">
-        <div className="relative z-10">
-          <ProjectSummary />
-        </div>
-      </div>
+      <DataTable data={data} />
     </div>
   );
 }

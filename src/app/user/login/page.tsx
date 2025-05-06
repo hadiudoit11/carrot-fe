@@ -1,20 +1,43 @@
 "use client";
-import React, { useState } from "react";
-import { signIn } from "next-auth/react";
+import React, { useState, useEffect } from "react";
+import { signIn, getSession, useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { getSession } from "next-auth/react";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { data: session, status } = useSession();
+
+  // Check existing session on mount
+  useEffect(() => {
+    const checkExistingSession = async () => {
+      try {
+        // Only redirect if we have a valid session without errors
+        if (status === "authenticated" && session?.accessToken && !session?.error) {
+          console.log("Valid session detected, redirecting to home");
+          router.push("/home");
+        }
+      } catch (err) {
+        console.error("Session check error:", err);
+      }
+    };
+
+    checkExistingSession();
+  }, [session, status, router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
     try {
+      console.log("Attempting sign in for:", email);
+      
       const result = await signIn("credentials", {
         redirect: false,
         email,
@@ -23,17 +46,32 @@ const Login: React.FC = () => {
 
       console.log("SignIn result:", result);
       
-      const session = await getSession();
-      console.log("Session after login:", session);
-      
-      if (result && !result.error) {
-        router.push("/home");
-      } else {
-        setError(result?.error || "Login failed");
-        console.error("Login error:", result?.error);
+      if (result?.error) {
+        setError(result.error);
+        console.error("Login error:", result.error);
+        setIsLoading(false);
+        return;
       }
+      
+      // Wait a moment to ensure the session is properly established
+      setTimeout(async () => {
+        const session = await getSession();
+        console.log("Session after login:", session);
+        
+        if (!session || !session.accessToken) {
+          setError("Failed to establish session. Please try again.");
+          setIsLoading(false);
+          return;
+        }
+        
+        // Redirect to home if we have a valid session
+        router.push("/home");
+      }, 500);
+      
     } catch (err) {
       console.error("Login exception:", err);
+      setError("An unexpected error occurred. Please try again.");
+      setIsLoading(false);
     }
   };
 

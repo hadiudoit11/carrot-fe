@@ -1,0 +1,117 @@
+:root {
+  /* Brand Colors */
+  --brand-primary: #3498db;
+  --brand-secondary: #2ecc71;
+  --brand-accent: #f39c12;
+  
+  /* Background Colors */
+  --background-main: #f5f5f5;
+  --background-card: #ffffff;
+  --background-dark: #282828;
+  
+  /* Text Colors */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-light: #ffffff;
+  
+  /* Status Colors */
+  --status-success: #2ecc71;
+  --status-warning: #f39c12;
+  --status-error: #e74c3c;
+  --status-info: #3498db;
+}
+
+/* Dark mode overrides when using class="dark" */
+.dark {
+  /* Background colors in dark mode */
+  --background-main: #1a1a1a;
+  --background-card: #2a2a2a;
+  --background-dark: #121212;
+  
+  /* Text colors in dark mode */
+  --text-primary: #f5f5f5;
+  --text-secondary: #cccccc;
+}
+
+/*
+ * These utility classes use theme variables so they adapt to both
+ * dark mode and custom themes
+ */
+
+/* Background colors */
+.bg-brand-primary {
+  background-color: var(--brand-primary);
+}
+.bg-brand-secondary {
+  background-color: var(--brand-secondary);
+}
+.bg-brand-accent {
+  background-color: var(--brand-accent);
+}
+.bg-background-main {
+  background-color: var(--background-main);
+}
+.bg-background-card {
+  background-color: var(--background-card);
+}
+.bg-background-dark {
+  background-color: var(--background-dark);
+}
+
+/* Text colors */
+.text-brand-primary {
+  color: var(--brand-primary);
+}
+.text-brand-secondary {
+  color: var(--brand-secondary);
+}
+.text-brand-accent {
+  color: var(--brand-accent);
+}
+.text-primary {
+  color: var(--text-primary);
+}
+.text-secondary {
+  color: var(--text-secondary);
+}
+.text-light {
+  color: var(--text-light);
+}
+
+/* Border colors */
+.border-brand-primary {
+  border-color: var(--brand-primary);
+}
+.border-brand-secondary {
+  border-color: var(--brand-secondary);
+}
+.border-brand-accent {
+  border-color: var(--brand-accent);
+}
+
+/* Status colors */
+.bg-status-success {
+  background-color: var(--status-success);
+}
+.bg-status-warning {
+  background-color: var(--status-warning);
+}
+.bg-status-error {
+  background-color: var(--status-error);
+}
+.bg-status-info {
+  background-color: var(--status-info);
+}
+
+.text-status-success {
+  color: var(--status-success);
+}
+.text-status-warning {
+  color: var(--status-warning);
+}
+.text-status-error {
+  color: var(--status-error);
+}
+.text-status-info {
+  color: var(--status-info);
+} 
