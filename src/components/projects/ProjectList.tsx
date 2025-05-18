@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { apiGet } from '@/providers/apiRequest';
 import Link from 'next/link';
-import CreateProjectForm from './CreateProjectForm';
+import CreateProjectForm from '../forms/create-project-form';
 import { PlusIcon, CalendarIcon, ClockIcon, UserCircleIcon } from '@heroicons/react/24/outline';
 
 interface Project {
@@ -241,7 +241,7 @@ export default function ProjectList() {
                           </div>
                         </div>
                       </div>
-                      
+
                     </div>
                   </div>
                 </div>

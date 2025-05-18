@@ -98,38 +98,38 @@ const data = {
       items: [
         {
           title: "Recipes",
-          url: "#",
+          url: "/training/recipes",
         },
         {
           title: "Operations",
-          url: "#",
+          url: "/training/operations",
         },
         {
           title: "Tutorials",
-          url: "#",
+          url: "/training/tutorials",
         },
       ],
     },
     {
-      title: "Settings",
+      title: "Organization",
       url: "#",
       icon: Settings2,
       items: [
         {
           title: "General",
-          url: "#",
+          url: "/organization/general",
         },
         {
           title: "Sites",
-          url: "#",
+          url: "/organization/sites",
         },
         {
           title: "Billing",
-          url: "#",
+          url: "/organization/billing",
         },
         {
-          title: "organization",
-          url: "#",
+          title: "Roles & Permissions",
+          url: "/organization/roles-permissions",
         },
       ],
     },

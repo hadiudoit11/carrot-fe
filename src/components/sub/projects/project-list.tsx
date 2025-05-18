@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { apiGet } from '@/providers/apiRequest';
 import Link from 'next/link';
-import { CalendarIcon, TrendingUpIcon, MoreVertical } from 'lucide-react';
+import { CalendarIcon, TrendingUpIcon, MoreVertical, PlusIcon } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -72,6 +72,13 @@ interface ProjectItem {
   task_status_counts?: { [key: string]: number }; // Add the raw task status counts
 }
 
+// Add props interface
+interface ProjectListProps {
+  isCreateFormOpen?: boolean;
+  setIsCreateFormOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  onProjectCreated?: (projectId: string) => void;
+}
+
 // Function to generate progress segments for a project
 const getProjectStatusSegments = (project: ProjectItem): ProgressSegment[] => {
   // If no task status counts, return empty array
@@ -121,7 +128,11 @@ const getProjectStatusSegments = (project: ProjectItem): ProgressSegment[] => {
   return segments.sort((a, b) => (b.priority || 0) - (a.priority || 0));
 };
 
-export default function ProjectList() {
+export default function ProjectList({ 
+  isCreateFormOpen, 
+  setIsCreateFormOpen,
+  onProjectCreated
+}: ProjectListProps) {
   const [projects, setProjects] = useState<ProjectItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -305,6 +316,17 @@ export default function ProjectList() {
     fetchProjectDetail(projectId);
   };
 
+  // This function is now using the parent's state handler
+  const handleProjectCreated = (projectId: string) => {
+    // Call the parent's handler if provided
+    if (onProjectCreated) {
+      onProjectCreated(projectId);
+    }
+    
+    // Refresh the projects list
+    fetchProjects();
+  };
+
   return (
     <>
       {isLoading && (
@@ -327,80 +349,86 @@ export default function ProjectList() {
       )}
       
       {!isLoading && !error && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-4 lg:px-6">
-          {Array.isArray(projects) && projects.length > 0 ? (
-            projects.map((project) => (
-              <div key={project.id} className="block">
-                <Card className="overflow-hidden group">
-                  <div 
-                    className="cursor-pointer"
-                    onClick={() => router.push(`/projects/${project.id}`)}
-                  >
-                    <CardHeader className="relative">
-                      <CardDescription className="text-xs text-muted-foreground">
-                        {formatDate(project.createdAt)}
-                      </CardDescription>
-                      <CardTitle className="text-base font-semibold line-clamp-1">
-                        {project.title}
-                      </CardTitle>
-                      <div className="absolute right-4 top-4">
-                        <Badge variant={getStatusBadgeVariant(project.statusName)}>
-                          {project.statusName || "No Status"}
-                        </Badge>
-                      </div>
-                    </CardHeader>
+        <>
+          <div className="flex justify-between items-center mb-4 px-4 lg:px-6">
+            <h2 className="text-xl font-medium">Project List</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 px-4 lg:px-6">
+            {Array.isArray(projects) && projects.length > 0 ? (
+              projects.map((project) => (
+                <div key={project.id} className="block">
+                  <Card className="overflow-hidden group">
+                    <div 
+                      className="cursor-pointer"
+                      onClick={() => router.push(`/projects/${project.id}`)}
+                    >
+                      <CardHeader className="relative">
+                        <CardDescription className="text-xs text-muted-foreground">
+                          {formatDate(project.createdAt)}
+                        </CardDescription>
+                        <CardTitle className="text-base font-semibold line-clamp-1">
+                          {project.title}
+                        </CardTitle>
+                        <div className="absolute right-4 top-4">
+                          <Badge variant={getStatusBadgeVariant(project.statusName)}>
+                            {project.statusName || "No Status"}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      
+                      <CardContent className="p-6 pt-0">
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                          {project.description || "No description provided."}
+                        </p>
+                        
+                        {/* Replace the basic progress bar with the multi-segment progress bar */}
+                        <Progress 
+                          segments={getProjectStatusSegments(project)}
+                          className="h-2 mb-2"
+                        />
+                      </CardContent>
+                    </div>
                     
-                    <CardContent className="p-6 pt-0">
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                        {project.description || "No description provided."}
-                      </p>
-                      
-                      {/* Replace the basic progress bar with the multi-segment progress bar */}
-                      <Progress 
-                        segments={getProjectStatusSegments(project)}
-                        className="h-2 mb-2"
-                      />
-                    </CardContent>
-                  </div>
-                  
-                  <CardFooter className="flex-col items-start gap-1 pt-0 text-xs">
-                    <div className="flex justify-between items-center w-full">
-                      <div className="line-clamp-1 flex gap-1 font-medium">
-                        <span className="text-muted-foreground">Due:</span>
-                        <span>{formatDate(project.dueDate)}</span>
-                      </div>
-                      
-                      <div className="flex gap-1 items-center">
-                        <div className="flex items-center gap-1 mr-2">
-                          <TrendingUpIcon className="size-3" />
-                          <span>{calculateProgress(project)}% Complete</span>
+                    <CardFooter className="flex-col items-start gap-1 pt-0 text-xs">
+                      <div className="flex justify-between items-center w-full">
+                        <div className="line-clamp-1 flex gap-1 font-medium">
+                          <span className="text-muted-foreground">Due:</span>
+                          <span>{formatDate(project.dueDate)}</span>
                         </div>
                         
-                        <div
-                          className="rounded-full p-1 hover:bg-muted cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openProjectDetail(project.id);
-                          }}
-                        >
-                          <MoreVertical className="size-3" />
+                        <div className="flex gap-1 items-center">
+                          <div className="flex items-center gap-1 mr-2">
+                            <TrendingUpIcon className="size-3" />
+                            <span>{calculateProgress(project)}% Complete</span>
+                          </div>
+                          
+                          <div
+                            className="rounded-full p-1 hover:bg-muted cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openProjectDetail(project.id);
+                            }}
+                          >
+                            <MoreVertical className="size-3" />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardFooter>
-                </Card>
+                    </CardFooter>
+                  </Card>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full flex flex-col items-center justify-center py-12 bg-muted/20 rounded-lg">
+                <CalendarIcon className="h-12 w-12 text-muted-foreground mb-3" />
+                <p className="text-lg mb-4">No projects found</p>
+                <Button onClick={() => setIsCreateFormOpen && setIsCreateFormOpen(true)}>
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  Create Your First Project
+                </Button>
               </div>
-            ))
-          ) : (
-            <div className="col-span-full flex flex-col items-center justify-center py-12 bg-muted/20 rounded-lg">
-              <CalendarIcon className="h-12 w-12 text-muted-foreground mb-3" />
-              <p className="text-lg mb-4">No projects found</p>
-              <Button onClick={() => router.push('/projects/new')}>
-                Create Your First Project
-              </Button>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        </>
       )}
 
       {/* Project Detail Sheet */}

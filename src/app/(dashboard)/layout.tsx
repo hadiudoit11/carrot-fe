@@ -2,7 +2,6 @@
 import { ReactNode } from "react";
 import { Open_Sans } from 'next/font/google';
 import { NextAuthProvider } from '@/providers/NextAuthProvider';
-import '../globals.css';
 import { AppSidebar } from "@/components/sub/navbars/app-sidebar";
 import {
   Breadcrumb,

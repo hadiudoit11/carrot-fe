@@ -25,7 +25,7 @@ import type { ProgressSegment } from "@/components/sub/projects/multi-progress-b
 // Import TaskDetail component
 import TaskDetail from '@/components/projects/TaskDetail';
 
-// Define the TaskDetail type interface directly instead of importing it
+// Add TaskDetailType interface for task deletion handling
 interface TaskDetailType {
   id: string;
   name: string;
@@ -88,6 +88,7 @@ interface Task {
   order: number;
 }
 
+// Update the Project interface to include statuses
 interface Project {
   id: string;
   name: string;
@@ -96,6 +97,7 @@ interface Project {
   task_status_counts?: {
     [key: string]: number;
   };
+  statuses?: Status[]; // Add statuses array
 }
 
 // Map status types to their corresponding lists
@@ -125,9 +127,18 @@ const mapTasksToPostFormat = (tasks, availableStatuses): Post[] => {
     
     // Determine which status to use
     let status = task.status;
+    
     // If this status isn't in our available statuses, use the first available status
     if (availableStatuses.length > 0 && !availableStatuses.includes(status)) {
-      status = availableStatuses[0];
+      // Also try to check if the task has a status_id property that matches
+      // This is needed when the API returns status IDs instead of types
+      if (task.status_id && availableStatuses.includes(task.status_id)) {
+        status = task.status_id;
+      } else {
+        // Use the first available status as a fallback
+        status = availableStatuses[0];
+        console.warn(`Task ${task.id || task.name} has status "${status}" that is not in available statuses. Using ${availableStatuses[0]} instead.`);
+      }
     }
     
     return {
@@ -232,20 +243,30 @@ export default function ProjectPage() {
   
   const [isMounted, setIsMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [project, setProject] = useState<any>(null);
+  const [project, setProject] = useState<Project | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   
-  // Get organization statuses
-  const { statuses, statusNames, loading: statusesLoading } = useOrgProjectStatuses();
+  // Add state for project-specific statuses
+  const [projectStatuses, setProjectStatuses] = useState<string[]>([]);
+  const [projectStatusNames, setProjectStatusNames] = useState<Record<string, string>>({});
+  
+  // Keep the organization statuses as fallback
+  const { statuses: orgStatuses, statusNames: orgStatusNames, loading: statusesLoading } = useOrgProjectStatuses();
   
   // Initialize postsByStatus with empty arrays for each status
   const [postsByStatus, setPostsByStatus] = useState<PostsByStatus>({});
   
+  // Update this effect to initialize with project statuses when available
   useEffect(() => {
-    if (statuses.length > 0) {
-      setPostsByStatus(getEmptyPostsByStatus(statuses));
+    // If we have project statuses, use those
+    if (projectStatuses.length > 0) {
+      setPostsByStatus(getEmptyPostsByStatus(projectStatuses));
     }
-  }, [statuses]);
+    // Otherwise, fall back to organization statuses
+    else if (orgStatuses.length > 0) {
+      setPostsByStatus(getEmptyPostsByStatus(orgStatuses));
+    }
+  }, [projectStatuses, orgStatuses]);
   
   const [dataReady, setDataReady] = useState(false);
 
@@ -258,10 +279,98 @@ export default function ProjectPage() {
     }
   }, [sessionStatus]);
 
-  // Fetch project and tasks data
+  // Function to handle newly created tasks
+  const handleTaskCreated = (newTask: Post) => {
+    // Update posts array with the new task
+    setPosts(prevPosts => {
+      const updatedPosts = [...prevPosts, newTask];
+      return updatedPosts;
+    });
+    
+    // Update postsByStatus with the new task
+    setPostsByStatus(prevPostsByStatus => {
+      const updatedPostsByStatus = { ...prevPostsByStatus };
+      
+      // If the status array exists, add the task to it
+      if (Array.isArray(updatedPostsByStatus[newTask.status])) {
+        updatedPostsByStatus[newTask.status] = [...updatedPostsByStatus[newTask.status], newTask];
+      } else {
+        // Create the status array if it doesn't exist
+        updatedPostsByStatus[newTask.status] = [newTask];
+      }
+      
+      return updatedPostsByStatus;
+    });
+    
+    // Update task status counts in the project
+    if (project && project.task_status_counts) {
+      const statusName = projectStatuses.length > 0 ? 
+        projectStatusNames[newTask.status] : 
+        orgStatusNames[newTask.status];
+      
+      // Create a copy of the current counts
+      const updatedTaskCounts = { ...project.task_status_counts };
+      
+      // Increment the count for this status
+      if (updatedTaskCounts[statusName] !== undefined) {
+        updatedTaskCounts[statusName] = (updatedTaskCounts[statusName] as number) + 1;
+      } else {
+        updatedTaskCounts[statusName] = 1;
+      }
+      
+      // Update the project with new counts
+      setProject({
+        ...project,
+        task_status_counts: updatedTaskCounts
+      });
+    }
+  };
+
+  // Function to handle deleted tasks
+  const handleTaskDeleted = (project: Project | null, setProject: React.Dispatch<React.SetStateAction<Project | null>>) => {
+    return (taskDetail: TaskDetailType) => {
+      // Update posts array by removing the deleted task
+      setPosts(prevPosts => prevPosts.filter(post => post.id !== taskDetail.id));
+      
+      // Update postsByStatus by removing the deleted task
+      setPostsByStatus(prevPostsByStatus => {
+        const updatedPostsByStatus = { ...prevPostsByStatus };
+        if (Array.isArray(updatedPostsByStatus[taskDetail.status])) {
+          updatedPostsByStatus[taskDetail.status] = updatedPostsByStatus[taskDetail.status].filter(
+            post => post.id !== taskDetail.id
+          );
+        }
+        return updatedPostsByStatus;
+      });
+      
+      // Update task status counts in the project
+      if (project && project.task_status_counts) {
+        const statusName = projectStatuses.length > 0 ? 
+          projectStatusNames[taskDetail.status] : 
+          orgStatusNames[taskDetail.status];
+        
+        // Create a copy of the current counts
+        const updatedTaskCounts = { ...project.task_status_counts };
+        
+        // Decrement the count for this status
+        if (updatedTaskCounts[statusName] !== undefined && updatedTaskCounts[statusName] > 0) {
+          updatedTaskCounts[statusName] = (updatedTaskCounts[statusName] as number) - 1;
+        }
+        
+        // Update the project with new counts
+        setProject({
+          ...project,
+          task_status_counts: updatedTaskCounts
+        });
+      }
+    };
+  };
+
+  // Fetch project and tasks data - modify this function
   useEffect(() => {
     const fetchProject = async () => {
-      if (!projectId || !isMounted || statusesLoading || statuses.length === 0) return;
+      // Only require the component to be mounted, since we'll get statuses from the project
+      if (!projectId || !isMounted) return;
       
       setIsLoading(true);
       setDataReady(false);
@@ -273,10 +382,40 @@ export default function ProjectPage() {
         
         setProject(projectData);
         
-        // Convert tasks to the post format expected by the components
-        const formattedPosts = mapTasksToPostFormat(tasksData, statuses);
-        setPosts(formattedPosts);
-        setPostsByStatus(getPostsByStatus(formattedPosts, statuses));
+        // Extract project-specific statuses if available
+        if (projectData.statuses && Array.isArray(projectData.statuses) && projectData.statuses.length > 0) {
+          // Extract status IDs to use as keys
+          const statusIds = projectData.statuses.map(status => status.id);
+          
+          // Create mapping of IDs to names
+          const statusMapping = projectData.statuses.reduce((acc, status) => {
+            acc[status.id] = status.name;
+            return acc;
+          }, {} as Record<string, string>);
+          
+          // Set the project-specific statuses
+          setProjectStatuses(statusIds);
+          setProjectStatusNames(statusMapping);
+          
+          // Convert tasks using project-specific statuses
+          const formattedPosts = mapTasksToPostFormat(tasksData, statusIds);
+          setPosts(formattedPosts);
+          setPostsByStatus(getPostsByStatus(formattedPosts, statusIds));
+        } else {
+          // Fall back to organization statuses if project doesn't have specific ones
+          console.warn('Project does not have specific statuses, falling back to organization statuses');
+          
+          // Wait for org statuses if they're still loading
+          if (statusesLoading) {
+            console.log('Waiting for organization statuses to load...');
+            return;
+          }
+          
+          // Convert tasks using organization statuses
+          const formattedPosts = mapTasksToPostFormat(tasksData, orgStatuses);
+          setPosts(formattedPosts);
+          setPostsByStatus(getPostsByStatus(formattedPosts, orgStatuses));
+        }
         
         // Mark data as ready after a slight delay to ensure rendering is complete
         setTimeout(() => {
@@ -290,10 +429,11 @@ export default function ProjectPage() {
       }
     };
     
-    if (isMounted && statuses.length > 0) {
+    // Run fetchProject when component is mounted
+    if (isMounted) {
       fetchProject();
     }
-  }, [projectId, isMounted, statuses, statusesLoading]);
+  }, [projectId, isMounted, orgStatuses, statusesLoading]);
 
   // Handle drag end event
   const onDragEnd: OnDragEndResponder = async (result) => {
@@ -302,7 +442,7 @@ export default function ProjectPage() {
     // Drop outside a valid area or no change
     if (!destination || 
         (destination.droppableId === source.droppableId && 
-         destination.index === source.index)) {
+          destination.index === source.index)) {
       return;
     }
     
@@ -340,6 +480,8 @@ export default function ProjectPage() {
     
     // Update task status counts for the progress bar
     if (project?.task_status_counts && sourceStatus !== destinationStatus) {
+      // Get status names from project status names if available, otherwise fallback to org status names
+      const statusNames = projectStatuses.length > 0 ? projectStatusNames : orgStatusNames;
       const sourceStatusName = statusNames[sourceStatus] || sourceStatus;
       const destStatusName = statusNames[destinationStatus] || destinationStatus;
       
@@ -518,27 +660,28 @@ export default function ProjectPage() {
       </div>
       
       <div className="w-full rounded-lg border border-border bg-card text-card-foreground shadow-sm overflow-hidden">
-        {isMounted && dataReady && statuses.length > 0 ? (
+        {isMounted && dataReady ? (
           <DragDropContext onDragEnd={onDragEnd}>
             <div className="flex overflow-x-auto p-4 bg-background">
-              {statuses.map((status) => (
+              {(projectStatuses.length > 0 ? projectStatuses : orgStatuses).map((status) => (
                 <PostColumn
                   key={status}
                   status={status}
-                  statusName={statusNames[status]}
+                  statusName={projectStatuses.length > 0 ? projectStatusNames[status] : orgStatusNames[status]}
                   posts={postsByStatus[status] || []}
                   onTaskDeleted={handleTaskDeleted(project, setProject)}
+                  onTaskCreated={handleTaskCreated}
                 />
               ))}
             </div>
           </DragDropContext>
         ) : (
           <div className="flex overflow-x-auto p-4 bg-background">
-            {statuses.length > 0 ? (
-              statuses.map((status) => (
+            {(projectStatuses.length > 0 ? projectStatuses : orgStatuses).length > 0 ? (
+              (projectStatuses.length > 0 ? projectStatuses : orgStatuses).map((status) => (
                 <div key={status} className="flex-1 bg-card rounded-lg w-72 flex-shrink-0 mr-3 p-2 border">
                   <h3 className="text-center font-medium text-card-foreground mb-3">
-                    {statusNames[status] || status}
+                    {(projectStatuses.length > 0 ? projectStatusNames[status] : orgStatusNames[status]) || status}
                   </h3>
                   <div className="min-h-[100px] p-2 rounded-md">
                     <div className="flex flex-col items-center justify-center h-24 text-center border border-dashed border-muted rounded-lg p-2 my-1">
@@ -560,9 +703,9 @@ export default function ProjectPage() {
                 </Button>
               </div>
             )}
-        </div>
+          </div>
         )}
-        </div>
+      </div>
     </div>
   );
 }

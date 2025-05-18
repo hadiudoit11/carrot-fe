@@ -6,11 +6,13 @@ import { useEffect, useState } from "react";
 import ProjectList from "@/components/sub/projects/project-list";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
+import CreateProjectForm from "@/components/forms/create-project-form";
 
 export default function ProjectsOverviewPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
 
   useEffect(() => {
     if (status === 'loading') return; // Do nothing while loading
@@ -25,7 +27,13 @@ export default function ProjectsOverviewPage() {
 
   // Function to handle "New Project" button click
   const handleCreateProject = () => {
-    router.push('/projects/new');
+    setIsCreateFormOpen(true);
+  };
+
+  // Handle project creation success
+  const handleProjectCreated = (projectId: string) => {
+    setIsCreateFormOpen(false);
+    router.push(`/projects/${projectId}`);
   };
 
   if (status === 'loading' || isLoading) {
@@ -49,7 +57,18 @@ export default function ProjectsOverviewPage() {
         </Button>
       </div>
       
-      <ProjectList />
+      <ProjectList 
+        isCreateFormOpen={isCreateFormOpen}
+        setIsCreateFormOpen={setIsCreateFormOpen}
+        onProjectCreated={handleProjectCreated}
+      />
+
+      {/* Project Creation Form moved to parent component */}
+      <CreateProjectForm
+        isOpen={isCreateFormOpen}
+        onClose={() => setIsCreateFormOpen(false)}
+        onSuccess={handleProjectCreated}
+      />
     </div>
   );
 }
