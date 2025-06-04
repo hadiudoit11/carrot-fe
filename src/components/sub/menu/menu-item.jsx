@@ -1,6 +1,5 @@
 import React from "react";
-import "@/components/sub/menu/styles.scss";
-import "@/components/sub/menu/menu-item.scss";
+import "@/components/sub/menu/styles.css";
 
 const MenuItem = ({ children, title, action, isActive = null }) => (
   <button
@@ -9,7 +8,6 @@ const MenuItem = ({ children, title, action, isActive = null }) => (
     title={title}
   >
     {children}
-
   </button>
 );
 

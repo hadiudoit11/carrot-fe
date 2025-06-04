@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { extensions } from '@/tiptapExtensions';
 import MenuBar from '@/components/sub/menu/menu-bar';
-import '@/components/sub/menu/styles.scss';
+import '@/components/sub/menu/styles.css';
 import { apiPut } from '@/providers/apiRequest';
 
 const Tiptap = ({ initialContent, articleId }) => {

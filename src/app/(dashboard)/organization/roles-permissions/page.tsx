@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { apiGet, apiPost, apiDelete } from "@/providers/apiRequest";
-import { Loader2, Plus, Search } from "lucide-react";
+import { apiGet, apiPost, apiDelete, apiPut } from "@/providers/apiRequest";
+import { Loader2, Plus, Search, Save } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 // UI Components
@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 
 // Types
 interface Role {
@@ -63,6 +63,9 @@ export default function RolesPermissionsPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedRoleName, setSelectedRoleName] = useState("");
+  const [selectedRoleDescription, setSelectedRoleDescription] = useState("");
+  const [isUpdatingDetails, setIsUpdatingDetails] = useState(false);
 
   const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
 
@@ -188,6 +191,8 @@ export default function RolesPermissionsPage() {
   // Handle role selection
   const handleRoleSelect = (role: Role) => {
     setSelectedRole(role);
+    setSelectedRoleName(role.name);
+    setSelectedRoleDescription(role.description || "");
     setActiveTab("details");
   };
 
@@ -216,6 +221,36 @@ export default function RolesPermissionsPage() {
     role.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     (role.description && role.description.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  // Update role details
+  const updateRoleDetails = async () => {
+    if (!selectedRole) return;
+    
+    setIsUpdatingDetails(true);
+    try {
+      // Update role details only
+      await apiPut(`${backendURL}/api/v1/access/role/permissions/update/${selectedRole.id}/`, {
+        name: selectedRoleName,
+        description: selectedRoleDescription
+      });
+      
+      handleRoleUpdated();
+      
+      toast({
+        title: "Role updated",
+        description: "The role details have been updated successfully.",
+      });
+    } catch (error) {
+      console.error('Error updating role details:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update role details. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingDetails(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -320,18 +355,42 @@ export default function RolesPermissionsPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle>Role Details</CardTitle>
-                    <CardDescription>Basic information about this role</CardDescription>
+                    <CardDescription>Update the basic information for this role</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid gap-2">
-                      <Label>Name</Label>
-                      <div className="text-lg font-medium">{selectedRole.name}</div>
+                      <Label htmlFor="roleName">Role Name</Label>
+                      <Input
+                        id="roleName"
+                        value={selectedRoleName}
+                        onChange={(e) => setSelectedRoleName(e.target.value)}
+                        placeholder="Enter role name"
+                      />
                     </div>
                     <div className="grid gap-2">
-                      <Label>Description</Label>
-                      <div className="text-gray-700 dark:text-gray-300">
-                        {selectedRole.description || "No description provided"}
-                      </div>
+                      <Label htmlFor="roleDescription">Description</Label>
+                      <Textarea
+                        id="roleDescription"
+                        value={selectedRoleDescription}
+                        onChange={(e) => setSelectedRoleDescription(e.target.value)}
+                        placeholder="Enter role description"
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex justify-end">
+                      <Button onClick={updateRoleDetails} disabled={isUpdatingDetails}>
+                        {isUpdatingDetails ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="mr-2 h-4 w-4" />
+                            Save Details
+                          </>
+                        )}
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

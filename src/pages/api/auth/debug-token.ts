@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getToken } from 'next-auth/jwt';
-import refreshAccessToken from '../../../lib/refreshAccessToken';
+import { refreshAccessToken } from '../../../lib/refreshAccessToken';
 
 type DebugTokenResponse = {
   token?: any;

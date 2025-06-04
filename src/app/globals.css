@@ -103,7 +103,7 @@ textarea {
 }
 
 .menu-bar button {
-  @apply mr-2 p-2 bg-transparent border-none cursor-pointer text-gray-700;
+  @apply mr-2 p-2 bg-transparent border-0 cursor-pointer text-gray-700;
 }
 
 .menu-bar button:hover {
@@ -123,11 +123,10 @@ textarea {
   outline: none;
   max-width: 8.5in;
   margin: 0 auto;
-  padding: .5in;
+  padding: 0.5in;
   box-sizing: border-box;
-  min-height: calc(100vh - 150px);
+  min-height: 500px;
 }
-
 
 .ProseMirror p {
   margin: 0 0 1em;
