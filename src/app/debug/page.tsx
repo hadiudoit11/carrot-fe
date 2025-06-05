@@ -1,14 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getBackendUrl } from '@/providers/apiRequest';
 
 export default function DebugPage() {
   const [debugInfo, setDebugInfo] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<string | null>(null);
+  const [backendUrl, setBackendUrl] = useState<string>('');
 
   useEffect(() => {
+    // Get backend URL on client side
+    setBackendUrl(process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80');
+    
     const fetchDebugInfo = async () => {
       try {
         const response = await fetch('/api/debug/config');
@@ -25,8 +28,8 @@ export default function DebugPage() {
   const testBackendConnection = async () => {
     try {
       setTestResult('Testing...');
-      const backendUrl = getBackendUrl();
-      const response = await fetch(`${backendUrl}/api/v1/health-check/`);
+      const url = backendUrl.endsWith('/') ? backendUrl.slice(0, -1) : backendUrl;
+      const response = await fetch(`${url}/api/v1/health-check/`);
       
       if (response.ok) {
         setTestResult('✅ Successfully connected to backend');
@@ -49,7 +52,7 @@ export default function DebugPage() {
           <div>
             <h3 className="font-medium mb-2">Backend URL</h3>
             <code className="bg-muted p-2 rounded block">
-              {getBackendUrl()}
+              {backendUrl}
             </code>
           </div>
           

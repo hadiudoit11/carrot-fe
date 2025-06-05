@@ -4,12 +4,14 @@
  */
 
 const getBackendUrl = () => {
-  const url = process.env.NEXT_PUBLIC_BACKEND_URL;
-  if (!url) {
-    console.error('Backend URL not configured!');
-    return 'http://localhost:80'; // Fallback for development
+  if (typeof window === 'undefined') {
+    // Server-side: use environment variable directly
+    return process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
   }
-  return url.endsWith('/') ? url.slice(0, -1) : url; // Remove trailing slash if present
+  
+  // Client-side: use window.ENV if available, fallback to process.env
+  const url = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
+  return url.endsWith('/') ? url.slice(0, -1) : url;
 };
 
 interface RequestOptions extends RequestInit {
