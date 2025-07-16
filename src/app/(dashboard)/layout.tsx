@@ -1,7 +1,5 @@
-"use client";
 import { ReactNode } from "react";
 import { Open_Sans } from 'next/font/google';
-import { NextAuthProvider } from '@/providers/NextAuthProvider';
 import { AppSidebar } from "@/components/sub/navbars/app-sidebar";
 import {
   Breadcrumb,
@@ -19,6 +17,8 @@ import {
 } from "@/components/ui/sidebar";
 import { SiteHeader } from '@/components/main/site-header';
 import { ToastProvider } from "@/components/ui/toast-provider";
+import { AuthGuard } from "@/components/auth/auth-guard";
+import { SessionDebug } from "@/components/auth/session-debug";
 
 // Initialize Open Sans font
 const openSans = Open_Sans({ 
@@ -34,7 +34,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <NextAuthProvider>
+    <AuthGuard>
       <ToastProvider>
         <SidebarProvider>
           <AppSidebar variant="inset" />
@@ -48,6 +48,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </SidebarInset>
         </SidebarProvider>
       </ToastProvider>
-    </NextAuthProvider>
+      <SessionDebug />
+    </AuthGuard>
   );
 }

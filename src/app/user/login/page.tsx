@@ -13,22 +13,7 @@ const Login: React.FC = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
 
-  // Check existing session on mount
-  useEffect(() => {
-    const checkExistingSession = async () => {
-      try {
-        // Only redirect if we have a valid session without errors
-        if (status === "authenticated" && session?.accessToken && !session?.error) {
-          console.log("Valid session detected, redirecting to home");
-          router.push("/home");
-        }
-      } catch (err) {
-        console.error("Session check error:", err);
-      }
-    };
 
-    checkExistingSession();
-  }, [session, status, router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

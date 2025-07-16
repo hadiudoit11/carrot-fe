@@ -273,11 +273,24 @@ export default function ProjectPage() {
   // Check if component is mounted on client
   useEffect(() => {
     setIsMounted(true);
+  }, []);
 
-    if (sessionStatus === 'unauthenticated') {
-      window.location.href = '/user/login';
+  // Handle authentication
+  useEffect(() => {
+    if (sessionStatus === 'loading') {
+      return; // Wait for session to load
     }
-  }, [sessionStatus]);
+    
+    if (sessionStatus === 'unauthenticated') {
+      router.push('/user/login');
+      return;
+    }
+    
+    if (session?.error === 'RefreshAccessTokenError') {
+      router.push('/user/login');
+      return;
+    }
+  }, [session, sessionStatus, router]);
 
   // Function to handle newly created tasks
   const handleTaskCreated = (newTask: Post) => {

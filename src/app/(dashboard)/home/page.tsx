@@ -18,17 +18,39 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (status === 'loading') return;
+    console.log('Home page useEffect triggered');
+    console.log('Status:', status);
+    console.log('Session:', session);
+    
+    if (status === 'loading') {
+      console.log('Session still loading...');
+      return; // Wait for session to load
+    }
+    
     setIsLoading(false);
     
-    if (!session || session?.error === 'RefreshAccessTokenError') {
+    // Only check authentication after session has loaded
+    if (status === 'unauthenticated') {
+      console.log('User is unauthenticated, redirecting to /user/login');
       router.push('/user/login');
       return;
     }
     
-    if (!session?.user.organization) {
-      router.push('/onboarding');
+    if (session?.error === 'RefreshAccessTokenError') {
+      console.log('Session error detected, redirecting to /user/login');
+      router.push('/user/login');
       return;
+    }
+    
+    // Check if we have a valid session with organization
+    if (session?.user?.organization && status === 'authenticated') {
+      console.log('Found organization, staying on home page');
+      console.log('Organization ID:', session.user.organization);
+      console.log('Organization Name:', session.user.organization_name);
+      // Session is valid, we can stay on this page
+    } else if (status === 'authenticated') {
+      console.log('Authenticated but no organization, redirecting to /onboarding');
+      router.push('/onboarding');
     }
   }, [session, status, router]);
 

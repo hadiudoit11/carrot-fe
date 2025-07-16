@@ -13,6 +13,9 @@ import {
   Settings2,
   SquareTerminal,
   ChevronRight,
+  ShoppingBag,
+  TrendingUp,
+  BarChart3,
 } from "lucide-react"
 
 import { NavMain } from "@/components/sub/navbars/nav-main"
@@ -36,17 +39,17 @@ const data = {
   },
   teams: [
     {
-      name: "Acme Inc",
+      name: "Foxtail Coffee",
       logo: GalleryVerticalEnd,
       plan: "Enterprise",
     },
     {
-      name: "Acme Corp.",
+      name: "HQ",
       logo: AudioWaveform,
       plan: "Startup",
     },
     {
-      name: "Evil Corp.",
+      name: "WinterPark.",
       logo: Command,
       plan: "Free",
     },
@@ -74,7 +77,7 @@ const data = {
     },
     {
       title: "Projects",
-      url: "#",
+      url: "/projects/overview",
       icon: Bot,
       items: [
         {
@@ -93,7 +96,7 @@ const data = {
     },
     {
       title: "Training",
-      url: "#",
+      url: "/training",
       icon: BookOpen,
       items: [
         {
@@ -108,7 +111,21 @@ const data = {
           title: "Tutorials",
           url: "/training/tutorials",
         },
+        {
+          title: "Shop",
+          url: "/shop",
+        },
       ],
+    },
+    {
+      title: "Grow",
+      url: "/grow",
+      icon: TrendingUp,
+    },
+    {
+      title: "Sales",
+      url: "/sales",
+      icon: BarChart3,
     },
     {
       title: "Organization",

@@ -8,7 +8,8 @@ import { XCircle, User, Loader2 } from 'lucide-react';
 
 interface UserData {
   id: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   role?: string;
   avatar_url?: string;
@@ -112,15 +113,24 @@ export default function UserSelector({
   const getFilteredUsers = () => {
     if (!searchQuery) return users;
     
-    return users.filter(user => 
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    return users.filter(user => {
+      const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+      const email = user.email || '';
+      
+      return fullName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+             email.toLowerCase().includes(searchQuery.toLowerCase());
+    });
   };
 
   const handleSelect = (user: UserData) => {
     onUserAdd(user);
     setSearchQuery('');
+  };
+
+  const getUserDisplayName = (user: UserData) => {
+    const firstName = user.first_name || '';
+    const lastName = user.last_name || '';
+    return `${firstName} ${lastName}`.trim() || 'Unknown User';
   };
 
   return (
@@ -164,8 +174,8 @@ export default function UserSelector({
                     <User className="h-4 w-4 text-primary" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-medium">{user.name}</span>
-                    <span className="text-xs text-muted-foreground">{user.email}</span>
+                    <span className="text-sm font-medium">{getUserDisplayName(user)}</span>
+                    <span className="text-xs text-muted-foreground">{user.email || 'No email'}</span>
                   </div>
                 </div>
               </CommandItem>
@@ -182,7 +192,7 @@ export default function UserSelector({
               variant="secondary"
               className="pl-2 flex items-center gap-1"
             >
-              <span>{user.name}</span>
+              <span>{getUserDisplayName(user)}</span>
               <button
                 type="button"
                 onClick={() => onUserRemove(user.id)}

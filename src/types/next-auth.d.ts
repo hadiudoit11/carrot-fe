@@ -21,6 +21,7 @@ declare module "next-auth" {
     email: string;
     organization?: string;
     organization_name?: string;
+    full_name?: string;
   }
 
   interface JWT {
@@ -28,8 +29,10 @@ declare module "next-auth" {
     refreshToken?: string;
     accessTokenExpires?: number;
     error?: string;
-    email?: string;
+    email?: string | null;
     organization?: string;
     organization_name?: string;
+    organization_id?: string;
+    full_name?: string;
   }
 }

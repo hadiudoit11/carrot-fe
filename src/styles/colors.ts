@@ -31,10 +31,10 @@ export const colors = {
   },
   
   // Text Colors
-  textPrimary: '#effcaa', // White
-  textSecondary: '#0b3a29',
-  textTertiary: '#1d2e28', // Light gray
-  textLight: '#effcaa',   // Black (for light backgrounds)
+  textPrimary: '#333333', // Dark gray for primary text
+  textSecondary: '#666666', // Medium gray for secondary text
+  textTertiary: '#999999', // Light gray for tertiary text
+  textLight: '#ffffff',   // White for light backgrounds
   
   // Status Colors
   success: '#2ecc71',     // Green

@@ -13,7 +13,6 @@ const config: Config = {
   	extend: {
   		fontFamily: {
   			primary: [
-  				"Cal Sans",
   				"system-ui",
   				"sans-serif"
   			],

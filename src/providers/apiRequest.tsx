@@ -1,4 +1,4 @@
-import { refreshAccessToken } from "@/pages/api/auth/[...nextauth]";
+import { refreshAccessToken } from "@/lib/auth";
 import { getSession, signIn, useSession } from "next-auth/react";
 
 export async function apiRequest(url: string, method: string, body?: any): Promise<any> {
