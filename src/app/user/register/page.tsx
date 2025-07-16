@@ -46,6 +46,8 @@ export default function RegisterPage() {
 
     try {
       const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
+      console.log('Backend URL:', backendURL);
+      console.log('Full URL being called:', `${backendURL}/api/v1/auth/register/`);
       const response = await apiPost(`${backendURL}/api/v1/auth/register/`, {
         first_name: formData.first_name,
         last_name: formData.last_name,
