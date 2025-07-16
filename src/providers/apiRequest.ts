@@ -20,22 +20,32 @@ interface RequestOptions extends RequestInit {
 
 // Helper to handle API responses
 const handleResponse = async (response: Response) => {
+  console.log('handleResponse called with status:', response.status);
+  
   if (!response.ok) {
+    console.log('Response not ok, trying to get error data...');
     // Try to get error message from response
     try {
       const errorData = await response.json();
+      console.log('Error data:', errorData);
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     } catch (e) {
+      console.log('Could not parse error data:', e);
       throw new Error(`HTTP error! status: ${response.status}`);
     }
   }
   
   // Check if response is empty
   const contentType = response.headers.get('content-type');
+  console.log('Content-Type:', contentType);
   if (contentType && contentType.includes('application/json')) {
-    return response.json();
+    const jsonData = await response.json();
+    console.log('JSON response:', jsonData);
+    return jsonData;
   }
-  return response.text();
+  const textData = await response.text();
+  console.log('Text response:', textData);
+  return textData;
 };
 
 // Helper to build URL with query parameters
@@ -76,17 +86,37 @@ export const apiPost = async (endpoint: string, data?: any, options: RequestOpti
   const { params, ...fetchOptions } = options;
   const url = buildUrl(endpoint, params);
   
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    body: data ? JSON.stringify(data) : undefined,
-    ...fetchOptions,
-  });
+  console.log('apiRequest called with URL:', url, 'method: POST');
+  console.log('Request data:', data);
   
-  return handleResponse(response);
+  console.log('Starting fetch request...');
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+  
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      body: data ? JSON.stringify(data) : undefined,
+      signal: controller.signal,
+      ...fetchOptions,
+    });
+    
+    clearTimeout(timeoutId);
+    console.log('Fetch completed successfully');
+    
+    console.log('Response status:', response.status);
+    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+    
+    return handleResponse(response);
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.log('Fetch failed with error:', error);
+    throw error;
+  }
 };
 
 // PUT request

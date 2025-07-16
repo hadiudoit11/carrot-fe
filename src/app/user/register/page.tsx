@@ -28,19 +28,25 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted!');
     setError("");
     setSuccess("");
 
     // Basic validation
+    console.log('Form data:', formData);
     if (formData.password !== formData.confirm_password) {
+      console.log('Password mismatch');
       setError("Passwords do not match");
       return;
     }
 
     if (formData.password.length < 8) {
+      console.log('Password too short');
       setError("Password must be at least 8 characters long");
       return;
     }
+    
+    console.log('Validation passed, making API call...');
 
     setIsLoading(true);
 
@@ -48,6 +54,7 @@ export default function RegisterPage() {
       const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
       console.log('Backend URL:', backendURL);
       console.log('Full URL being called:', `${backendURL}/api/v1/auth/register/`);
+      console.log('About to make API call...');
       const response = await apiPost(`${backendURL}/api/v1/auth/register/`, {
         first_name: formData.first_name,
         last_name: formData.last_name,
@@ -56,17 +63,27 @@ export default function RegisterPage() {
         password2: formData.confirm_password,
       });
 
+      console.log('API call completed, response:', response);
+
       if (response) {
+        console.log('Setting success message...');
         setSuccess("Registration successful! Please check your email to verify your account.");
         // Redirect to verification page with email parameter
         setTimeout(() => {
+          console.log('Redirecting to verification page...');
           router.push(`/user/verify?email=${encodeURIComponent(formData.email)}`);
         }, 2000);
       }
     } catch (error: any) {
       console.error('Registration error:', error);
+      console.log('Error details:', {
+        message: error?.message,
+        stack: error?.stack,
+        name: error?.name
+      });
       setError(error?.message || "Registration failed. Please try again.");
     } finally {
+      console.log('Finally block - setting loading to false');
       setIsLoading(false);
     }
   };
