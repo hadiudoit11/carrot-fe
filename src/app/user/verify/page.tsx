@@ -8,6 +8,16 @@ import { apiPost } from "@/providers/apiRequest";
 function VerifyPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  
+  // Log environment variables on component mount
+  React.useEffect(() => {
+    console.log('=== Verification Page Environment Variables ===');
+    console.log('NEXT_PUBLIC_BACKEND_URL:', process.env.NEXT_PUBLIC_BACKEND_URL);
+    console.log('Current URL:', window.location.href);
+    console.log('Current origin:', window.location.origin);
+    console.log('Email from params:', searchParams?.get('email'));
+    console.log('=== End Environment Variables ===');
+  }, [searchParams]);
   const [verificationCode, setVerificationCode] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -42,11 +52,32 @@ function VerifyPageContent() {
 
     try {
       const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
-      const response = await apiPost(`${backendURL}/api/v1/auth/verify-email/`, {
-        otp: verificationCode,
+      console.log('=== Verification API Call ===');
+      console.log('Backend URL:', backendURL);
+      console.log('Verification code:', verificationCode);
+      console.log('Email:', email);
+      
+      const response = await fetch(`${backendURL}/api/v1/auth/verify-email/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          otp: verificationCode,
+          email: email, // Add email to the request
+        })
       });
+      
+      console.log('Verification response status:', response.status);
+      console.log('Verification response ok:', response.ok);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+      
+      const responseData = await response.json();
+      console.log('Verification response data:', responseData);
 
-      if (response) {
+      if (responseData) {
         setSuccess("Email verified successfully! Redirecting to login...");
         // Redirect to login page after a short delay
         setTimeout(() => {
@@ -72,9 +103,28 @@ function VerifyPageContent() {
 
     try {
       const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
-      await apiPost(`${backendURL}/api/v1/auth/resend-verification/`, {
-        email: email,
+      console.log('=== Resend Verification API Call ===');
+      console.log('Backend URL:', backendURL);
+      console.log('Email for resend:', email);
+      
+      const response = await fetch(`${backendURL}/api/v1/auth/resend-verification/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email,
+        })
       });
+      
+      console.log('Resend response status:', response.status);
+      console.log('Resend response ok:', response.ok);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+      
+      const responseData = await response.json();
+      console.log('Resend response data:', responseData);
 
       setSuccess("Verification code resent! Please check your email.");
     } catch (error: any) {
