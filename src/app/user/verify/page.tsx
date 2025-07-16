@@ -69,11 +69,6 @@ function VerifyPageContent() {
       console.log('Verification response status:', response.status);
       console.log('Verification response ok:', response.ok);
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-      
       // Handle 204 No Content response (success with no body)
       if (response.status === 204) {
         console.log('Verification successful (204 No Content)');
@@ -85,11 +80,33 @@ function VerifyPageContent() {
         return;
       }
       
-      // Handle responses with JSON body
-      const responseData = await response.json();
-      console.log('Verification response data:', responseData);
+      // Handle error responses
+      if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (jsonError) {
+          // If we can't parse JSON, use the status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+      
+      // Handle successful responses with JSON body
+      try {
+        const responseData = await response.json();
+        console.log('Verification response data:', responseData);
 
-      if (responseData) {
+        if (responseData) {
+          setSuccess("Email verified successfully! Redirecting to login...");
+          // Redirect to login page after a short delay
+          setTimeout(() => {
+            router.push('/user/login');
+          }, 2000);
+        }
+      } catch (jsonError) {
+        console.log('No JSON body in response, treating as success');
         setSuccess("Email verified successfully! Redirecting to login...");
         // Redirect to login page after a short delay
         setTimeout(() => {
@@ -130,13 +147,26 @@ function VerifyPageContent() {
       console.log('Resend response status:', response.status);
       console.log('Resend response ok:', response.ok);
       
+      // Handle error responses
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (jsonError) {
+          // If we can't parse JSON, use the status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
       
-      const responseData = await response.json();
-      console.log('Resend response data:', responseData);
+      // Handle successful responses
+      try {
+        const responseData = await response.json();
+        console.log('Resend response data:', responseData);
+      } catch (jsonError) {
+        console.log('No JSON body in resend response, treating as success');
+      }
 
       setSuccess("Verification code resent! Please check your email.");
     } catch (error: any) {
