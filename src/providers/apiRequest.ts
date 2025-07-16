@@ -51,7 +51,11 @@ const handleResponse = async (response: Response) => {
 // Helper to build URL with query parameters
 const buildUrl = (endpoint: string, params?: Record<string, string>) => {
   const baseUrl = getBackendUrl();
+  console.log('buildUrl - baseUrl:', baseUrl);
+  console.log('buildUrl - endpoint:', endpoint);
+  
   const url = new URL(`${baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`);
+  console.log('buildUrl - final URL:', url.toString());
   
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
@@ -90,22 +94,24 @@ export const apiPost = async (endpoint: string, data?: any, options: RequestOpti
   console.log('Request data:', data);
   
   console.log('Starting fetch request...');
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+  
+  // Simple timeout promise
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('Request timeout')), 5000); // 5 second timeout
+  });
+  
+  const fetchPromise = fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    body: data ? JSON.stringify(data) : undefined,
+    ...fetchOptions,
+  });
   
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      body: data ? JSON.stringify(data) : undefined,
-      signal: controller.signal,
-      ...fetchOptions,
-    });
-    
-    clearTimeout(timeoutId);
+    const response = await Promise.race([fetchPromise, timeoutPromise]);
     console.log('Fetch completed successfully');
     
     console.log('Response status:', response.status);
@@ -113,7 +119,6 @@ export const apiPost = async (endpoint: string, data?: any, options: RequestOpti
     
     return handleResponse(response);
   } catch (error) {
-    clearTimeout(timeoutId);
     console.log('Fetch failed with error:', error);
     throw error;
   }
