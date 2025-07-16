@@ -13,7 +13,20 @@ const Login: React.FC = () => {
   const router = useRouter();
   const { data: session, status } = useSession();
 
-
+  // Check if user just created an organization and is already authenticated
+  useEffect(() => {
+    const justCreatedOrganization = localStorage.getItem('justCreatedOrganization');
+    
+    console.log('Login page - Session status:', status);
+    console.log('Login page - Session user:', session?.user);
+    console.log('Login page - Just created organization flag:', justCreatedOrganization);
+    
+    if (justCreatedOrganization === 'true' && status === 'authenticated' && session?.user?.organization) {
+      console.log('User just created organization and is authenticated, redirecting to home');
+      localStorage.removeItem('justCreatedOrganization'); // Clean up
+      router.push('/home');
+    }
+  }, [session, status, router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -49,8 +62,14 @@ const Login: React.FC = () => {
           return;
         }
         
-        // Redirect to home if we have a valid session
-        router.push("/home");
+        // Check if user has an organization
+        if (session.user?.organization) {
+          console.log("User has organization, redirecting to home");
+          router.push("/home");
+        } else {
+          console.log("User authenticated but no organization, redirecting to onboarding");
+          router.push("/onboarding");
+        }
       }, 500);
       
     } catch (err) {

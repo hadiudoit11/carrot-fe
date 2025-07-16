@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { apiPost } from "@/providers/apiRequest";
 
 interface FormData {
@@ -34,6 +35,7 @@ const OnboardingSlideshow: React.FC = () => {
   });
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const router = useRouter();
+  const { update: updateSession } = useSession();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -130,7 +132,28 @@ const OnboardingSlideshow: React.FC = () => {
   
       if (response) {
         console.log("Submission successful:", response);
-        router.push("/home");
+        console.log("Response keys:", Object.keys(response));
+        console.log("Response.organization_id:", response.organization_id);
+        console.log("Response.id:", response.id);
+        console.log("Response.name:", response.name);
+        
+        // Update the session to include the new organization data
+        console.log("Updating session with new organization data...");
+        const organizationId = response.organization_id || response.id;
+        const organizationName = response.name;
+        
+        console.log("Using organization ID:", organizationId);
+        console.log("Using organization name:", organizationName);
+        
+        // Instead of trying to update the session directly, let's redirect to login
+        // which will re-authenticate the user and get the updated session with organization
+        console.log("Organization created successfully, redirecting to login to refresh session");
+        
+        // Store a flag in localStorage to indicate we just created an organization
+        localStorage.setItem('justCreatedOrganization', 'true');
+        
+        // Redirect to login page which will automatically redirect back to home
+        window.location.href = "/user/login";
       } else {
         setGeneralError("Submission failed - no response returned");
         console.error("Submission failed - no response returned");

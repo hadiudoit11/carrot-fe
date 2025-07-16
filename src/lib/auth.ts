@@ -166,7 +166,7 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  secret: process.env.SECRET_KEY,
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -175,7 +175,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user?: User }): Promise<JWT> {
+    async jwt({ token, user, account, profile, trigger, isNewUser, session }) {
       if (user) {
         console.log('=== JWT CALLBACK - USER DATA ===');
         console.log('User organization:', user.organization);

@@ -46,6 +46,8 @@ const HomePage: React.FC = () => {
     } else if (status === 'authenticated') {
       console.log('Authenticated but no organization, staying on onboarding');
       console.log('Session user:', session?.user);
+      console.log('Session user organization field:', session?.user?.organization);
+      console.log('Session user organization_name field:', session?.user?.organization_name);
     }
   }, [session, status, router]);
 
@@ -57,7 +59,29 @@ const HomePage: React.FC = () => {
     return <div>Redirecting to login...</div>;
   }
   
-  return <OnboardingLayout />;
+  return (
+    <div>
+      <OnboardingLayout />
+      {/* Debug section for manual refresh */}
+      <div className="fixed bottom-4 right-4 bg-gray-800 text-white p-4 rounded-lg text-sm">
+        <p>Debug: Authenticated but no organization</p>
+        <p>Organization: {session?.user?.organization || 'None'}</p>
+        <p>Organization Name: {session?.user?.organization_name || 'None'}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="mt-2 px-3 py-1 bg-blue-600 rounded text-xs"
+        >
+          Refresh Page
+        </button>
+        <button 
+          onClick={() => router.push('/home')} 
+          className="mt-2 ml-2 px-3 py-1 bg-green-600 rounded text-xs"
+        >
+          Try Home
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default HomePage;
