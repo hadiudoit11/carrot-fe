@@ -7,6 +7,17 @@ import { apiPost } from "@/providers/apiRequest";
 
 export default function RegisterPage() {
   const router = useRouter();
+  
+  // Log environment variables on component mount
+  React.useEffect(() => {
+    console.log('=== Registration Page Environment Variables ===');
+    console.log('NEXT_PUBLIC_BACKEND_URL:', process.env.NEXT_PUBLIC_BACKEND_URL);
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('Current URL:', window.location.href);
+    console.log('Current origin:', window.location.origin);
+    console.log('=== End Environment Variables ===');
+  }, []);
+  
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -52,20 +63,40 @@ export default function RegisterPage() {
 
     try {
       const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
+      console.log('=== Registration API Call ===');
       console.log('Backend URL:', backendURL);
       console.log('Full URL being called:', `${backendURL}/api/v1/auth/register/`);
+      console.log('Current domain:', window.location.hostname);
+      console.log('Expected NextAuth URL:', process.env.NEXTAUTH_URL || 'NOT SET');
       console.log('About to make API call...');
-      const response = await apiPost(`${backendURL}/api/v1/auth/register/`, {
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        email: formData.email,
-        password: formData.password,
-        password2: formData.confirm_password,
+      console.log('Using direct fetch instead of apiPost...');
+      
+      const response = await fetch(`${backendURL}/api/v1/auth/register/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          email: formData.email,
+          password: formData.password,
+          password2: formData.confirm_password,
+        })
       });
+      
+      console.log('Direct fetch status:', response.status);
+      console.log('Direct fetch ok:', response.ok);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+      
+      const responseData = await response.json();
+      console.log('Direct fetch response:', responseData);
 
-      console.log('API call completed, response:', response);
+      console.log('API call completed, response:', responseData);
 
-      if (response) {
+      if (responseData) {
         console.log('Setting success message...');
         setSuccess("Registration successful! Please check your email to verify your account.");
         // Redirect to verification page with email parameter

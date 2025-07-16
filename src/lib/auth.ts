@@ -106,6 +106,15 @@ export async function refreshAccessToken(token: JWT): Promise<JWT> {
 }
 
 export const authOptions: NextAuthOptions = {
+  // Log the NextAuth URL being used
+  ...(() => {
+    console.log('=== NextAuth Configuration ===');
+    console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
+    console.log('NEXTAUTH_SECRET:', process.env.NEXTAUTH_SECRET ? 'SET' : 'NOT SET');
+    console.log('NEXT_PUBLIC_BACKEND_URL:', process.env.NEXT_PUBLIC_BACKEND_URL);
+    console.log('=== End NextAuth Configuration ===');
+    return {};
+  })(),
   providers: [
     CredentialsProvider({
       name: 'Credentials',
