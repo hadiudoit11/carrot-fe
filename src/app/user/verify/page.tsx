@@ -74,6 +74,18 @@ function VerifyPageContent() {
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
       
+      // Handle 204 No Content response (success with no body)
+      if (response.status === 204) {
+        console.log('Verification successful (204 No Content)');
+        setSuccess("Email verified successfully! Redirecting to login...");
+        // Redirect to login page after a short delay
+        setTimeout(() => {
+          router.push('/user/login');
+        }, 2000);
+        return;
+      }
+      
+      // Handle responses with JSON body
       const responseData = await response.json();
       console.log('Verification response data:', responseData);
 

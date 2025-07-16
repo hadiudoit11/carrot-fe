@@ -112,6 +112,8 @@ export const authOptions: NextAuthOptions = {
     console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL);
     console.log('NEXTAUTH_SECRET:', process.env.NEXTAUTH_SECRET ? 'SET' : 'NOT SET');
     console.log('NEXT_PUBLIC_BACKEND_URL:', process.env.NEXT_PUBLIC_BACKEND_URL);
+    console.log('Expected domain: www.merlinsfork.com');
+    console.log('URL mismatch:', process.env.NEXTAUTH_URL !== 'https://www.merlinsfork.com' ? 'YES - FIX NEEDED' : 'NO');
     console.log('=== End NextAuth Configuration ===');
     return {};
   })(),
