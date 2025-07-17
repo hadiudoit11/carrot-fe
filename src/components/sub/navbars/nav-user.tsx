@@ -8,6 +8,8 @@ import {
   LogOut,
   Sparkles,
 } from "lucide-react"
+import { useSession, signOut } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 import {
   Avatar,
@@ -40,6 +42,46 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const { data: session } = useSession()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      // Call backend logout API
+      if (session?.accessToken && session?.refreshToken) {
+        const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:80"
+        const response = await fetch(`${backendURL}/api/v1/auth/logout/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+          body: JSON.stringify({
+            refresh: session.refreshToken,
+          }),
+        })
+
+        if (response.ok) {
+          console.log('Backend logout successful')
+        } else {
+          console.warn('Backend logout failed, but continuing with frontend logout')
+        }
+      }
+
+      // Sign out from NextAuth (this will clear the session)
+      await signOut({ 
+        redirect: true,
+        callbackUrl: '/user/login'
+      })
+    } catch (error) {
+      console.error('Error during logout:', error)
+      // Even if there's an error, try to sign out from NextAuth
+      await signOut({ 
+        redirect: true,
+        callbackUrl: '/user/login'
+      })
+    }
+  }
 
   return (
     <SidebarMenu>
@@ -102,7 +144,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
               Log out
             </DropdownMenuItem>

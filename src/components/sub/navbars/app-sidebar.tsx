@@ -29,6 +29,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { useSession } from "next-auth/react";
 
 // This is sample data.
 const data = {
@@ -171,6 +172,23 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: session } = useSession();
+  let avatar = "/avatars/shadcn.jpg";
+  if (session?.user) {
+    if ('avatar' in session.user && typeof session.user.avatar === 'string' && session.user.avatar) {
+      avatar = session.user.avatar;
+    } else if ('image' in session.user && typeof session.user.image === 'string' && session.user.image) {
+      avatar = session.user.image;
+    }
+  }
+  const user = session?.user
+    ? {
+        name: session.user.name || session.user.email || "User",
+        email: session.user.email || "",
+        avatar,
+      }
+    : { name: data.user.name, email: data.user.email, avatar: data.user.avatar || "/avatars/shadcn.jpg" };
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -181,7 +199,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

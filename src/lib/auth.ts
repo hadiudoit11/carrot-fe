@@ -251,13 +251,20 @@ export const authOptions: NextAuthOptions = {
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
       session.user.email = token.email!;
-      
-      // Extract organization data from token (using the correct field names)
+      session.user.name = token.full_name || token.email; // Use full_name or fallback to email
+      session.user.full_name = token.full_name;
       session.user.organization = token.organization;
       session.user.organization_name = token.organization_name;
+      session.user.organization_id = token.organization_id;
       
-      console.log('Final session organization:', session.user.organization);
-      console.log('Final session organization_name:', session.user.organization_name);
+      console.log('Final session user data:', {
+        email: session.user.email,
+        name: session.user.name,
+        full_name: session.user.full_name,
+        organization: session.user.organization,
+        organization_name: session.user.organization_name,
+        organization_id: session.user.organization_id
+      });
       
       if (token.error === 'RefreshAccessTokenError') {
         session.error = 'RefreshAccessTokenError';
