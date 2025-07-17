@@ -188,40 +188,34 @@ export const PostColumn = ({
             <div className={`rounded-md ${
               snapshot.isDraggingOver ? "bg-muted" : ""
             }`}>
-              {safePosts.length === 0 ? (
-                isCreating ? (
-                  <NewTaskInput />
-                ) : (
-                  <div 
-                    onClick={() => setIsCreating(true)}
-                    className="flex flex-col items-center justify-center h-24 text-center border border-dashed border-muted rounded-lg p-2 my-1 cursor-pointer hover:bg-muted/20 transition-colors"
-                  >
-                    <PlusCircle className="h-5 w-5 text-muted-foreground mb-1" />
-                    <p className="text-sm text-muted-foreground">No tasks yet</p>
-                    <p className="text-xs text-muted-foreground mt-1">Click to add one</p>
-                  </div>
-                )
-              ) : (
-                <>
-                  {safePosts.map((post, index) => 
-                    post && post.id ? (
-                      <PostCard 
-                        key={post.id} 
-                        post={post} 
-                        index={index} 
-                        onTaskDeleted={onTaskDeleted}
-                      />
-                    ) : null
-                  )}
-                  {isCreating && <NewTaskInput />}
-                </>
+              {/* Render the list of posts */}
+              {safePosts.length === 0 && !isCreating && (
+                <div 
+                  onClick={() => setIsCreating(true)}
+                  className="flex flex-col items-center justify-center h-24 text-center border border-dashed border-muted rounded-lg p-2 my-1 cursor-pointer hover:bg-muted/20 transition-colors"
+                >
+                  <PlusCircle className="h-5 w-5 text-muted-foreground mb-1" />
+                  <p className="text-sm text-muted-foreground">No tasks yet</p>
+                  <p className="text-xs text-muted-foreground mt-1">Click to add one</p>
+                </div>
+              )}
+              {safePosts.map((post, index) => 
+                post && post.id ? (
+                  <PostCard 
+                    key={post.id} 
+                    post={post} 
+                    index={index} 
+                    onTaskDeleted={onTaskDeleted}
+                  />
+                ) : null
               )}
               {droppableProvided.placeholder}
+              {/* Always render the NewTaskInput at the end, but only show it if isCreating */}
+              {isCreating && <NewTaskInput key="new-task-input" />}
             </div>
           </CardContent>
         )}
       </Droppable>
-      
       {/* Add a button at the bottom of the column */}
       {!isCreating && (
         <div className="p-2 border-t">
