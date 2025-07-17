@@ -1,13 +1,17 @@
-import { Droppable } from "@hello-pangea/dnd";
-import { Post } from "./statuses";
-import { PostCard } from "./PostCard";
-import { useEffect, useState, useRef } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { PlusCircle, Loader2 } from "lucide-react";
-import { useToastContext } from "@/components/ui/toast-provider";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { apiPost } from "@/providers/apiRequest";
+"use client"
+
+import * as React from "react"
+import { useState, useEffect, useRef } from "react"
+import { useParams } from "next/navigation"
+import { Draggable, Droppable } from "@hello-pangea/dnd"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Loader2, PlusCircle } from "lucide-react"
+import { apiPost } from "@/providers/apiRequest"
+import { PostCard } from "./PostCard"
+import { Post } from "./statuses"
+import { useToastContext } from "@/components/ui/use-toast"
 
 // Add the TaskDetailType interface
 interface TaskDetailType {
@@ -46,6 +50,7 @@ export const PostColumn = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToastContext ? useToastContext() : { toast: () => {} };
+  const params = useParams();
   
   // Only enable client-side features after mounting
   useEffect(() => {
@@ -80,8 +85,19 @@ export const PostColumn = ({
     try {
       const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
       
-      // Get the project ID from the URL
-      const projectId = window.location.pathname.split('/').pop();
+      // Get the project ID from useParams instead of parsing URL
+      const projectId = params?.id as string;
+      
+      if (!projectId) {
+        throw new Error('Project ID not found');
+      }
+      
+      console.log('Creating task with:', {
+        name: newTaskTitle.trim(),
+        project: projectId,
+        status: status,
+        description: ''
+      });
       
       // Create the task
       const response = await apiPost(`${backendURL}/api/v1/project/task/create/`, {
@@ -90,6 +106,8 @@ export const PostColumn = ({
         status: status,
         description: '', // Empty description to start
       });
+      
+      console.log('Task creation response:', response);
       
       // Show success message
       toast({
@@ -108,23 +126,26 @@ export const PostColumn = ({
           index: safePosts.length // Add to end of list
         };
         
+        console.log('Created new post object:', newPost);
+        
         // Call the callback to inform parent component
         if (onTaskCreated) {
           onTaskCreated(newPost);
         }
+      } else {
+        console.error('Task creation response missing ID:', response);
+        throw new Error('Task creation failed: No ID returned');
       }
       
       // Reset the creation state
       setNewTaskTitle('');
       setIsCreating(false);
       
-      // Instead of reloading the page, the parent component will update the state
-      // window.location.reload(); - Remove this line
     } catch (error) {
       console.error('Error creating task:', error);
       toast({
         title: "Failed to create task",
-        description: "An error occurred while creating the task.",
+        description: error instanceof Error ? error.message : "An error occurred while creating the task.",
         variant: "destructive",
         duration: 3000,
       });
@@ -141,30 +162,6 @@ export const PostColumn = ({
       setIsCreating(false);
     }
   };
-  
-  // Create task input field component
-  const NewTaskInput = () => (
-    <div className="p-2 bg-background/50 rounded-md border-2 border-dashed border-primary/20 focus-within:border-primary/50 transition-all my-1">
-      {isSubmitting ? (
-        <div className="flex items-center justify-center p-2">
-          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-          <span className="text-sm">Creating task...</span>
-        </div>
-      ) : (
-        <input
-          ref={inputRef}
-          type="text"
-          value={newTaskTitle}
-          onChange={(e) => setNewTaskTitle(e.target.value)}
-          onKeyDown={handleCreateTask}
-          onBlur={handleBlur}
-          placeholder="Task title..."
-          className="w-full bg-transparent px-2 py-1 border-none focus:outline-none text-sm"
-          data-testid="new-task-input"
-        />
-      )}
-    </div>
-  );
   
   return (
     <Card className="flex-1 w-72 flex-shrink-0 mr-3 border bg-card text-card-foreground rounded-md">
@@ -211,7 +208,28 @@ export const PostColumn = ({
               )}
               {droppableProvided.placeholder}
               {/* Always render the NewTaskInput at the end, but only show it if isCreating */}
-              {isCreating && <NewTaskInput key="new-task-input" />}
+              {isCreating && (
+                <div className="p-2 bg-background/50 rounded-md border-2 border-dashed border-primary/20 focus-within:border-primary/50 transition-all my-1">
+                  {isSubmitting ? (
+                    <div className="flex items-center justify-center p-2">
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <span className="text-sm">Creating task...</span>
+                    </div>
+                  ) : (
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={newTaskTitle}
+                      onChange={(e) => setNewTaskTitle(e.target.value)}
+                      onKeyDown={handleCreateTask}
+                      onBlur={handleBlur}
+                      placeholder="Task title..."
+                      className="w-full bg-transparent px-2 py-1 border-none focus:outline-none text-sm"
+                      data-testid="new-task-input"
+                    />
+                  )}
+                </div>
+              )}
             </div>
           </CardContent>
         )}

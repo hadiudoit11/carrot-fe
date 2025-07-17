@@ -8,11 +8,13 @@ import { getSession } from 'next-auth/react';
 const getBackendUrl = () => {
   if (typeof window === 'undefined') {
     // Server-side: use environment variable directly
-    return process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
+    return process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
   }
   
   // Client-side: use window.ENV if available, fallback to process.env
-  const url = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
+  const url = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+  console.log('getBackendUrl - process.env.NEXT_PUBLIC_BACKEND_URL:', process.env.NEXT_PUBLIC_BACKEND_URL);
+  console.log('getBackendUrl - final URL:', url);
   return url.endsWith('/') ? url.slice(0, -1) : url;
 };
 

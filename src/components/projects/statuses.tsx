@@ -21,12 +21,13 @@ export const useOrgProjectStatuses = () => {
   useEffect(() => {
     const fetchStatuses = async () => {
       try {
-        const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
+        const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
         
         // Use the correct API endpoint to fetch statuses
         const response = await apiGet(`${backendURL}/api/v1/project/status/`);
+        console.log('Status API response:', response);
         
-        if (Array.isArray(response)) {
+        if (Array.isArray(response) && response.length > 0) {
           // Extract status values and display names
           const statusValues = response.map(status => status.id || status.type);
           
@@ -39,8 +40,8 @@ export const useOrgProjectStatuses = () => {
           setStatuses(statusValues);
           setStatusNames(nameMapping);
         } else {
-          console.error('Invalid status response format:', response);
-          // Fallback to basic statuses if response format is invalid
+          console.warn('Status API returned empty array or invalid format, using fallback statuses');
+          // Fallback to basic statuses if response format is invalid or empty
           setStatuses(['todo', 'inProgress', 'review', 'done']);
           setStatusNames({
             todo: 'To Do',
@@ -72,7 +73,10 @@ export const useOrgProjectStatuses = () => {
 
 // Function to organize posts by status
 export const getPostsByStatus = (unorderedPosts: Post[], availableStatuses: string[]) => {
+  console.log('getPostsByStatus called with:', { unorderedPosts, availableStatuses });
+  
   if (!unorderedPosts || !Array.isArray(unorderedPosts) || !availableStatuses || !Array.isArray(availableStatuses)) {
+    console.warn('Invalid inputs to getPostsByStatus:', { unorderedPosts, availableStatuses });
     return {} as PostsByStatus;
   }
 
@@ -82,19 +86,27 @@ export const getPostsByStatus = (unorderedPosts: Post[], availableStatuses: stri
     {} as PostsByStatus
   );
   
+  console.log('Initial postsByStatus:', postsByStatus);
+  
   // Add posts to their respective status arrays
   unorderedPosts.forEach(post => {
+    console.log('Processing post:', post);
     if (post && post.status) {
+      console.log(`Post ${post.id} has status: ${post.status}`);
       // If the status exists in our status list, add the post
       if (availableStatuses.includes(post.status)) {
+        console.log(`Adding post ${post.id} to status: ${post.status}`);
         postsByStatus[post.status].push(post);
       } else if (availableStatuses.length > 0) {
         // If status doesn't exist, add to first available status
+        console.log(`Post ${post.id} status "${post.status}" not found, adding to first available status: ${availableStatuses[0]}`);
         postsByStatus[availableStatuses[0]].push({
           ...post,
           status: availableStatuses[0]
         });
       }
+    } else {
+      console.warn('Post missing or has no status:', post);
     }
   });
   
@@ -105,5 +117,6 @@ export const getPostsByStatus = (unorderedPosts: Post[], availableStatuses: stri
     }
   });
   
+  console.log('Final postsByStatus:', postsByStatus);
   return postsByStatus;
 };

@@ -119,36 +119,68 @@ interface TaskList {
 
 // Map our Task data structure to Post data structure
 const mapTasksToPostFormat = (tasks, availableStatuses): Post[] => {
-  if (!Array.isArray(tasks)) return [];
+  console.log('mapTasksToPostFormat called with:', { tasks, availableStatuses });
   
-  return tasks.map(task => {
+  if (!Array.isArray(tasks)) {
+    console.warn('Tasks is not an array:', tasks);
+    return [];
+  }
+  
+  const result = tasks.map(task => {
+    console.log('Processing task:', task);
+    
     // Use our helper function to extract description content
     const content = getDescriptionText(task.description);
     
     // Determine which status to use
     let status = task.status;
+    console.log(`Task ${task.id} original status: ${status}`);
+    console.log(`Task ${task.id} status_name: ${task.status_name}`);
     
-    // If this status isn't in our available statuses, use the first available status
-    if (availableStatuses.length > 0 && !availableStatuses.includes(status)) {
-      // Also try to check if the task has a status_id property that matches
-      // This is needed when the API returns status IDs instead of types
-      if (task.status_id && availableStatuses.includes(task.status_id)) {
+    // Check if the task has a status_id property that might be the actual status identifier
+    if (task.status_id) {
+      console.log(`Task ${task.id} has status_id: ${task.status_id}`);
+      // If status_id is in available statuses, use it
+      if (availableStatuses.includes(task.status_id)) {
         status = task.status_id;
-      } else {
-        // Use the first available status as a fallback
-        status = availableStatuses[0];
-        console.warn(`Task ${task.id || task.name} has status "${status}" that is not in available statuses. Using ${availableStatuses[0]} instead.`);
+        console.log(`Using status_id: ${status}`);
       }
     }
     
-    return {
+    // If this status isn't in our available statuses, try to find a match
+    if (availableStatuses.length > 0 && !availableStatuses.includes(status)) {
+      console.log(`Status "${status}" not in available statuses:`, availableStatuses);
+      
+      // Try to find a status that matches by name (case-insensitive)
+      const matchingStatus = availableStatuses.find(availableStatus => 
+        availableStatus.toLowerCase() === status.toLowerCase() ||
+        availableStatus.toLowerCase() === (task.status_name || '').toLowerCase()
+      );
+      
+      if (matchingStatus) {
+        status = matchingStatus;
+        console.log(`Found matching status by name: ${status}`);
+      } else {
+        // Use the first available status as a fallback
+        status = availableStatuses[0];
+        console.warn(`Task ${task.id || task.name} has status "${task.status}" that is not in available statuses. Using ${availableStatuses[0]} instead.`);
+      }
+    }
+    
+    const mappedTask = {
       id: task.id || `temp-${Math.random().toString(36).substring(2, 9)}`,
       title: task.title || task.name || 'Untitled Task',
       content: content,
       status: status,
       index: task.order || 0
     };
+    
+    console.log('Mapped task:', mappedTask);
+    return mappedTask;
   });
+  
+  console.log('Final result from mapTasksToPostFormat:', result);
+  return result;
 };
 
 // Initialize an empty PostsByStatus object with the provided statuses
@@ -256,17 +288,7 @@ export default function ProjectPage() {
   // Initialize postsByStatus with empty arrays for each status
   const [postsByStatus, setPostsByStatus] = useState<PostsByStatus>({});
   
-  // Update this effect to initialize with project statuses when available
-  useEffect(() => {
-    // If we have project statuses, use those
-    if (projectStatuses.length > 0) {
-      setPostsByStatus(getEmptyPostsByStatus(projectStatuses));
-    }
-    // Otherwise, fall back to organization statuses
-    else if (orgStatuses.length > 0) {
-      setPostsByStatus(getEmptyPostsByStatus(orgStatuses));
-    }
-  }, [projectStatuses, orgStatuses]);
+
   
   const [dataReady, setDataReady] = useState(false);
 
@@ -389,22 +411,36 @@ export default function ProjectPage() {
       setDataReady(false);
       
       try {
-        const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
+        const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+        console.log('Fetching project data for ID:', projectId);
+        
         const projectData = await apiGet(`${backendURL}/api/v1/project/project/${projectId}/`);
+        console.log('Project data response:', projectData);
+        
         const tasksData = await apiGet(`${backendURL}/api/v1/project/project/${projectId}/tasks/`);
+        console.log('Tasks data response:', tasksData);
+        console.log('Tasks data type:', typeof tasksData);
+        console.log('Tasks data length:', Array.isArray(tasksData) ? tasksData.length : 'Not an array');
+        if (Array.isArray(tasksData) && tasksData.length > 0) {
+          console.log('First task example:', tasksData[0]);
+        }
         
         setProject(projectData);
         
         // Extract project-specific statuses if available
         if (projectData.statuses && Array.isArray(projectData.statuses) && projectData.statuses.length > 0) {
+          console.log('Using project-specific statuses:', projectData.statuses);
+          
           // Extract status IDs to use as keys
           const statusIds = projectData.statuses.map(status => status.id);
+          console.log('Project status IDs:', statusIds);
           
           // Create mapping of IDs to names
           const statusMapping = projectData.statuses.reduce((acc, status) => {
             acc[status.id] = status.name;
             return acc;
           }, {} as Record<string, string>);
+          console.log('Status mapping:', statusMapping);
           
           // Set the project-specific statuses
           setProjectStatuses(statusIds);
@@ -412,11 +448,14 @@ export default function ProjectPage() {
           
           // Convert tasks using project-specific statuses
           const formattedPosts = mapTasksToPostFormat(tasksData, statusIds);
+          console.log('Formatted posts with project statuses:', formattedPosts);
+          console.log('Posts by status result:', getPostsByStatus(formattedPosts, statusIds));
           setPosts(formattedPosts);
           setPostsByStatus(getPostsByStatus(formattedPosts, statusIds));
         } else {
           // Fall back to organization statuses if project doesn't have specific ones
           console.warn('Project does not have specific statuses, falling back to organization statuses');
+          console.log('Organization statuses:', orgStatuses);
           
           // Wait for org statuses if they're still loading
           if (statusesLoading) {
@@ -424,14 +463,58 @@ export default function ProjectPage() {
             return;
           }
           
-          // Convert tasks using organization statuses
-          const formattedPosts = mapTasksToPostFormat(tasksData, orgStatuses);
-          setPosts(formattedPosts);
-          setPostsByStatus(getPostsByStatus(formattedPosts, orgStatuses));
+          console.log('Statuses loading state:', statusesLoading);
+          console.log('Organization statuses length:', orgStatuses.length);
+          
+          // If org statuses are empty, create statuses from task data
+          if (orgStatuses.length === 0 && Array.isArray(tasksData) && tasksData.length > 0) {
+            console.log('Organization statuses are empty, creating statuses from task data');
+            
+            // Extract unique statuses from tasks
+            const taskStatuses = new Set();
+            const taskStatusNames = new Map();
+            
+            tasksData.forEach(task => {
+              if (task.status) {
+                taskStatuses.add(task.status);
+                if (task.status_name) {
+                  taskStatusNames.set(task.status, task.status_name);
+                }
+              }
+            });
+            
+            const extractedStatuses = Array.from(taskStatuses);
+            const extractedStatusNames = Object.fromEntries(taskStatusNames);
+            
+            console.log('Extracted statuses from tasks:', extractedStatuses);
+            console.log('Extracted status names:', extractedStatusNames);
+            
+            // Use extracted statuses
+            const formattedPosts = mapTasksToPostFormat(tasksData, extractedStatuses);
+            console.log('Formatted posts with extracted statuses:', formattedPosts);
+            console.log('Raw tasks data for comparison:', tasksData);
+            console.log('Extracted statuses being used:', extractedStatuses);
+            const postsByStatusResult = getPostsByStatus(formattedPosts, extractedStatuses);
+            console.log('Posts by status result:', postsByStatusResult);
+            setPosts(formattedPosts);
+            setPostsByStatus(postsByStatusResult);
+            
+            // Set these as project statuses
+            setProjectStatuses(extractedStatuses);
+            setProjectStatusNames(extractedStatusNames);
+          } else {
+            // Convert tasks using organization statuses
+            const formattedPosts = mapTasksToPostFormat(tasksData, orgStatuses);
+            console.log('Formatted posts with org statuses:', formattedPosts);
+            console.log('Posts by status result:', getPostsByStatus(formattedPosts, orgStatuses));
+            setPosts(formattedPosts);
+            setPostsByStatus(getPostsByStatus(formattedPosts, orgStatuses));
+          }
         }
         
         // Mark data as ready after a slight delay to ensure rendering is complete
         setTimeout(() => {
+          console.log('Setting dataReady to true');
           setDataReady(true);
         }, 100);
       } catch (error) {
@@ -442,11 +525,16 @@ export default function ProjectPage() {
       }
     };
     
-    // Run fetchProject when component is mounted
-    if (isMounted) {
-      fetchProject();
-    }
-  }, [projectId, isMounted, orgStatuses, statusesLoading]);
+      // Run fetchProject when component is mounted
+  if (isMounted) {
+    fetchProject();
+  }
+}, [projectId, isMounted, orgStatuses, statusesLoading]);
+
+// Debug effect to monitor postsByStatus changes
+useEffect(() => {
+  console.log('postsByStatus state changed:', postsByStatus);
+}, [postsByStatus]);
 
   // Handle drag end event
   const onDragEnd: OnDragEndResponder = async (result) => {
@@ -522,7 +610,7 @@ export default function ProjectPage() {
     
     // Save changes to backend
     try {
-      const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
+      const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
       
       await apiPut(`${backendURL}/api/v1/project/task/${sourcePost.id}/update/`, {
         name: sourcePost.title,
@@ -539,7 +627,7 @@ export default function ProjectPage() {
       // Revert the task_status_counts if we updated them
       if (project?.task_status_counts && sourceStatus !== destinationStatus) {
         // Refresh project data from server to get accurate counts
-        const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:80';
+        const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
         try {
           const refreshedProject = await apiGet(`${backendURL}/api/v1/project/project/${projectId}/`);
           setProject(refreshedProject);
@@ -676,16 +764,25 @@ export default function ProjectPage() {
         {isMounted && dataReady ? (
           <DragDropContext onDragEnd={onDragEnd}>
             <div className="flex overflow-x-auto p-4 bg-background">
-              {(projectStatuses.length > 0 ? projectStatuses : orgStatuses).map((status) => (
-                <PostColumn
-                  key={status}
-                  status={status}
-                  statusName={projectStatuses.length > 0 ? projectStatusNames[status] : orgStatusNames[status]}
-                  posts={postsByStatus[status] || []}
-                  onTaskDeleted={handleTaskDeleted(project, setProject)}
-                  onTaskCreated={handleTaskCreated}
-                />
-              ))}
+              {(() => {
+                const statuses = projectStatuses.length > 0 ? projectStatuses : orgStatuses;
+                console.log('Rendering columns with statuses:', statuses);
+                console.log('Current postsByStatus:', postsByStatus);
+                return statuses.map((status) => {
+                  const posts = postsByStatus[status] || [];
+                  console.log(`Column ${status} will have ${posts.length} posts:`, posts);
+                  return (
+                    <PostColumn
+                      key={status}
+                      status={status}
+                      statusName={projectStatuses.length > 0 ? projectStatusNames[status] : orgStatusNames[status]}
+                      posts={posts}
+                      onTaskDeleted={handleTaskDeleted(project, setProject)}
+                      onTaskCreated={handleTaskCreated}
+                    />
+                  );
+                });
+              })()}
             </div>
           </DragDropContext>
         ) : (
