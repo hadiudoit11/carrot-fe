@@ -6,6 +6,7 @@ import './globals.css';
 import { Open_Sans } from 'next/font/google';
 import { ThemeProvider } from '@/components/ui/theme-provider';
 import { availableThemes } from '@/config/themes';
+import FluidCursorWrapper from '@/components/FluidCursorWrapper';
 
 // Initialize Open Sans font
 const openSans = Open_Sans({ 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         >
           <NextAuthProvider>
             {children}
+            <FluidCursorWrapper />
           </NextAuthProvider>
         </ThemeProvider>
       </body>
