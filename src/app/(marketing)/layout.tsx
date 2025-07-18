@@ -6,7 +6,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
     <>
       {/* Header */}
       <header className="w-full px-6 py-4 flex items-center justify-between bg-white/80 backdrop-blur shadow-sm sticky top-0 z-40">
-        <Link href="/" className="text-2xl font-bold text-primary">Cosmic</Link>
+        <Link href="/" className="text-2xl font-bold text-primary">Merlin</Link>
         <nav className="hidden md:flex gap-6 items-center">
           <Link href="#features" className="hover:text-primary transition">Features</Link>
           <Link href="#pricing" className="hover:text-primary transition">Pricing</Link>
@@ -23,7 +23,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
       </main>
       {/* Footer */}
       <footer className="w-full py-8 text-center text-gray-500 bg-gray-50 border-t mt-12">
-        &copy; {new Date().getFullYear()} Cosmic. All rights reserved.
+        &copy; {new Date().getFullYear()} Merlin. All rights reserved.
       </footer>
     </>
   );

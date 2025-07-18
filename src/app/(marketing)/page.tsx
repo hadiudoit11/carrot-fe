@@ -6,7 +6,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center flex-1 text-center px-4 py-24 max-w-3xl mx-auto">
         <h1 className="text-4xl md:text-6xl font-bold mb-4">
-          Optimize Your Website with <span className="text-primary">AI Support</span>
+          Manage your franchise growth <span className="text-primary">AI Support</span>
         </h1>
         <p className="text-lg md:text-2xl text-gray-600 mb-8">
           Meet our AI-powered SaaS solution to lighten your workload, increase efficiency and make more accurate decisions.
